@@ -1,11 +1,13 @@
 var config = {
     type: Phaser.CANVAS,
-    width: 600, height: 400,
+    width: 1280, height: 720,
+    pixelArt: true,
     physics: {
         default: 'arcade',
         arcade: {
             gravity: { y : 0},
             debug: false
+            
         }
     },
 

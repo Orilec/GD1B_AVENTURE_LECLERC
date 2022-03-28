@@ -6,23 +6,38 @@ class scene1 extends Phaser.Scene {
     init(data) {this.positionX = data.positionX, this.positionY = data.positionY};
     preload() {
         this.load.image('sky', 'assets/sky.png');
+        this.load.image('map', 'assets/map_test_01.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
-        this.load.spritesheet('perso', 'assets/perso.png',
-            { frameWidth: 32, frameHeight: 48 });
+        this.load.spritesheet('perso', 'assets/sprite_sheet_heros.png',
+            { frameWidth: 32, frameHeight: 64 });
+        this.load.spritesheet('monstre', 'assets/creature_spritesheet.png',
+            { frameWidth: 32, frameHeight: 32 });
     }
+
+
+
     create() {
-        this.add.image(400, 300, 'sky');
+        this.add.image(1600, 800, 'map');
 
-        this.physics.world.setBounds(0, 0, 800, 600);
+        this.physics.world.setBounds(0, 0, 3200, 1600);
 
-        this.player = this.physics.add.sprite(this.positionX, this.positionY, 'perso');
+        this.player = this.physics.add.sprite(3000, 1400, 'perso');
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
         this.physics.add.collider(this.player, this.platforms);
+
+        this.monstre = this.physics.add.sprite(2000, 1000, 'monstre');
+
         this.anims.create({
-            key: 'left',
+            key: 'up',
             frames: this.anims.generateFrameNumbers('perso', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'down',
+            frames: this.anims.generateFrameNumbers('perso', { start: 4, end: 7 }),
             frameRate: 10,
             repeat: -1
         });
@@ -33,17 +48,53 @@ class scene1 extends Phaser.Scene {
         });
         this.anims.create({
             key: 'right',
-            frames: this.anims.generateFrameNumbers('perso', { start: 5, end: 8 }),
+            frames: this.anims.generateFrameNumbers('perso', { start: 8, end: 13 }),
             frameRate: 10,
             repeat: -1
         });
+        this.anims.create({
+            key: 'left',
+            frames: [{ key: 'perso', frame: 14 }],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'm_up',
+            frames: this.anims.generateFrameNumbers('monstre', { start: 6, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'm_down',
+            frames: this.anims.generateFrameNumbers('monstre', { start: 0, end: 1 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'm_right',
+            frames: this.anims.generateFrameNumbers('monstre', { start: 4, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'm_left',
+            frames: this.anims.generateFrameNumbers('monstre', { start: 2, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+
+
+
         this.cursors = this.input.keyboard.createCursorKeys();
 
 
-        this.cameras.main.setBounds(0, 0, 800, 600);
+        this.cameras.main.setBounds(0, 0, 3200, 1600);
         this.cameras.main.startFollow(this.player);
+        this.cameras.main.setZoom(2)
 
     }
+
 
     update() {
         if (this.gameOver) { return; }
@@ -58,19 +109,16 @@ class scene1 extends Phaser.Scene {
             this.player.anims.play('right', true); //et animation => droite
         }
         else if (this.cursors.up.isDown) {
-            //si touche haut appuyée ET que le perso touche le sol
-            this.player.setVelocityY(-240); //alors vitesse verticale négative
+            this.player.setVelocityY(-240); 
             this.player.setVelocityX(0);
-            this.player.anims.play('turn');
-            //(on saute)
+            this.player.anims.play('up', true);
 
         }
         else if (this.cursors.down.isDown) {
-            //si touche haut appuyée ET que le perso touche le sol
-            this.player.setVelocityY(240); //alors vitesse verticale négative
+            this.player.setVelocityY(240); 
             this.player.setVelocityX(0);
-            this.player.anims.play('turn');
-            //(on saute)
+            this.player.anims.play('down', true);
+
 
         }
         else { // sinon
@@ -79,11 +127,32 @@ class scene1 extends Phaser.Scene {
             this.player.anims.play('turn'); //animation fait face caméra
         }
 
-        if (this.player.x >= 770){
-            this.positionX = 30;
-            this.positionY = this.player.y;
-            this.scene.start("scene2", { positionX: this.positionX, positionY: this.positionY });
+        if (this.monstre.x < 400) {
+            this.monstreRight = true;
+            this.monstreLeft = false;
+
         }
+        if (this.monstre.x > 1200) {
+            this.monstreLeft = true;
+            this.monstreRight = false;
+
+        }
+
+        if (this.monstreRight) {
+            this.monstre.setVelocityX(100);
+            this.monstre.anims.play('m_right', true);
+        }
+        if (this.monstreLeft) {
+            this.monstre.setVelocityX(-100);
+            this.monstre.anims.play('m_left', true);
+        }
+
+
+        // if (this.player.x >= 770){
+        //     this.positionX = 30;
+        //     this.positionY = this.player.y;
+        //     this.scene.start("scene2", { positionX: this.positionX, positionY: this.positionY });
+        // }
 
 
     }
