@@ -6,11 +6,11 @@ var config = {
         default: 'arcade',
         arcade: {
             gravity: { y : 0},
-            debug: false
+            debug: true
             
         }
     },
 
-    scene: [menu, scene1, scene2]
+    scene: [menu, test_mecaniques, scene1, scene2]
 };
 new Phaser.Game(config);

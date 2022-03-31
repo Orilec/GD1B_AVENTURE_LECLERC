@@ -1,14 +1,17 @@
-class scene1 extends Phaser.Scene {
+class test_mecaniques extends Phaser.Scene {
     constructor() {
-        super("scene1");
-        
+        super("test_mecaniques");
+
     }
-    init(data) {this.positionX = data.positionX, this.positionY = data.positionY};
+    init(data) { this.positionX = data.positionX, this.positionY = data.positionY };
     preload() {
-        this.load.image('sky', 'assets/sky.png');
         this.load.image('map', 'assets/map_test_02.png');
-        this.load.image('ground', 'assets/platform.png');
-        this.load.image('star', 'assets/star.png');
+        this.load.image('button_unactivated', 'assets/bouton1_rouge.png');
+        this.load.image('button_activated', 'assets/bouton1_vert.png');
+        this.load.image('trou', 'assets/trou.png');
+        this.load.image('area1', 'assets/plateform1.png');
+        this.load.image('area2', 'assets/plateform2.png');
+        this.load.image('bridge', 'assets/pont.png');
         this.load.spritesheet('perso', 'assets/sprite_sheet_heros.png',
             { frameWidth: 32, frameHeight: 64 });
         this.load.spritesheet('monstre', 'assets/creature_spritesheet.png',
@@ -16,18 +19,50 @@ class scene1 extends Phaser.Scene {
     }
 
 
+    // this.player.body.enable = false.
+
 
     create() {
-        this.add.image(2250, 1750, 'map');
 
-        this.physics.world.setBounds(0, 0, 4500, 3500);
+        this.varFall = function fall() {
+            this.scene.scene.gameOver = true;
+            this.scene.scene.player.destroy();
+        }
 
-        this.player = this.physics.add.sprite(3000, 1400, 'perso');
+        this.button1Activated = false;
+        this.button2Activated = false;
+        this.bridgeAppeared = false;
+        this.isJumping = false;
+
+        this.platforms = this.physics.add.staticGroup();
+        this.platforms.create(96, 96, 'area1');
+        this.platforms.create(328, 96, 'area2');
+
+        this.trous = this.physics.add.staticGroup();
+        this.trou1 = this.trous.create(328, 96, 'trou')
+
+
+        this.buttons = this.physics.add.staticGroup();
+        this.button1 = this.buttons.create(100, 100, 'button_unactivated');
+        this.button2 = this.buttons.create(24, 20, 'button_unactivated');
+
+        this.physics.world.setBounds(0, 0, 384, 192);
+
+        this.player = this.physics.add.sprite(50, 50, 'perso');
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
-        this.physics.add.collider(this.player, this.platforms);
 
-        this.monstre = this.physics.add.sprite(2000, 1000, 'monstre');
+        this.player.body.setSize(20, 16);
+        this.player.body.setOffset(5, 45);
+
+        this.physics.add.overlap(this.player, this.button1, activate1, null, this);
+        this.physics.add.overlap(this.player, this.button2, activate2, null, this);
+        this.collider = this.physics.add.overlap(this.player, this.trou1, this.varFall, null, this);
+
+
+
+        this.monstre = this.physics.add.sprite(50, 150, 'monstre');
+        this.monstreRight = true;
 
         this.anims.create({
             key: 'up',
@@ -54,7 +89,7 @@ class scene1 extends Phaser.Scene {
         });
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('perso', { start: 16, end: 21}),
+            frames: this.anims.generateFrameNumbers('perso', { start: 16, end: 21 }),
             frameRate: 10,
             repeat: -1
         });
@@ -84,21 +119,59 @@ class scene1 extends Phaser.Scene {
             repeat: -1
         });
 
+        function activate1() {
+            this.scene.scene.button1.setTexture('button_activated')
+            this.scene.scene.button1Activated = true;
+        }
+
+        function activate2() {
+            this.scene.scene.button2.setTexture('button_activated')
+            this.scene.scene.button2Activated = true;
+        }
+
+
 
 
 
         this.cursors = this.input.keyboard.createCursorKeys();
+        this.cursors2 = this.input.keyboard.addKeys('space');
 
 
-        this.cameras.main.setBounds(0, 0, 4500, 3500);
+        this.cameras.main.setBounds(0, 0, 384, 192);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2)
 
     }
 
 
+
+
+
     update() {
         if (this.gameOver) { return; }
+
+
+        if(this.cursors2.space.isDown){
+            this.isJumping = true;
+            this.physics.world.removeCollider(this.collider);
+            this.player.anims.play('turn');
+            this.player.setAccelerationX(10000);
+            setTimeout(() => {
+                this.player.setAccelerationX(0);
+                this.isJumping = false;
+                this.collider = this.physics.add.overlap(this.player, this.trou1, this.varFall , null, this);
+            }, 500);
+        }
+
+        
+        
+
+        if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
+            this.bridgeAppeared = true;
+            this.bridge = this.platforms.create(232, 72, 'bridge');
+            this.player.depth = 1;
+            this.bridge.depth = 0;
+        }
         if (this.cursors.left.isDown) { //si la touche gauche est appuyée
             this.player.setVelocityY(0);
             this.player.setVelocityX(-240); //alors vitesse négative en X
@@ -110,13 +183,13 @@ class scene1 extends Phaser.Scene {
             this.player.anims.play('right', true); //et animation => droite
         }
         else if (this.cursors.up.isDown) {
-            this.player.setVelocityY(-240); 
+            this.player.setVelocityY(-240);
             this.player.setVelocityX(0);
             this.player.anims.play('up', true);
 
         }
         else if (this.cursors.down.isDown) {
-            this.player.setVelocityY(240); 
+            this.player.setVelocityY(240);
             this.player.setVelocityX(0);
             this.player.anims.play('down', true);
 
@@ -128,12 +201,14 @@ class scene1 extends Phaser.Scene {
             this.player.anims.play('turn'); //animation fait face caméra
         }
 
-        if (this.monstre.x < 400) {
+
+
+        if (this.monstre.x < 30) {
             this.monstreRight = true;
             this.monstreLeft = false;
 
         }
-        if (this.monstre.x > 1200) {
+        if (this.monstre.x > 100) {
             this.monstreLeft = true;
             this.monstreRight = false;
 
