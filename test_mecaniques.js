@@ -12,22 +12,36 @@ class test_mecaniques extends Phaser.Scene {
         this.load.image('area1', 'assets/plateform1.png');
         this.load.image('area2', 'assets/plateform2.png');
         this.load.image('bridge', 'assets/pont.png');
+        this.load.image('fond', 'assets/fond.png');
+        this.load.image('neurone_1', 'assets/neurone_1.png');
+        this.load.image('neurone_2', 'assets/neurone_2.png');
+        this.load.image('fog', 'assets/brouillard.png');
         this.load.spritesheet('perso', 'assets/sprite_sheet_heros.png',
             { frameWidth: 32, frameHeight: 64 });
         this.load.spritesheet('monstre', 'assets/creature_spritesheet.png',
             { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('vie', 'assets/vie_spritesheet.png',
             { frameWidth: 96, frameHeight: 64 });
+
+        this.load.image("tileset", "assets/tileset.png");
+        this.load.tilemapTiledJSON("map", "map.json");
+
+
     }
 
 
 
     create() {
 
-        this.varFall = function fall() {
+        this.physics.world.setBounds(0, 0, 3200, 1280);
+
+        function fall() {
             this.scene.scene.gameOver = true;
             this.scene.scene.player.destroy();
         }
+        this.add.tileSprite(1600, 640, 3200, 1280, 'fond');
+        this.add.tileSprite(1600, 640, 3200, 1280, 'neurone_1').setScrollFactor(0.80);
+        this.add.tileSprite(1600, 640, 3200, 1280, 'neurone_2').setScrollFactor(0.90);
 
         this.button1Activated = false;
         this.button2Activated = false;
@@ -35,39 +49,88 @@ class test_mecaniques extends Phaser.Scene {
         this.keyJustDown = "down";
         this.health = 3;
         this.isAttacking = false;
+        this.isJumping = false;
         this.invulnerable = false;
         this.monstre_alive = true;
 
+        const map = this.add.tilemap("map");
 
-        this.platforms = this.physics.add.staticGroup();
-        this.platforms.create(96, 96, 'area1');
-        this.platforms.create(328, 96, 'area2');
+        const tileset = map.addTilesetImage(
+            "tileset", "tileset"
+        );
+
+        // this.platforms = this.physics.add.staticGroup();
+        // this.platforms.create(96, 96, 'area1');
+        // this.platforms.create(328, 96, 'area2');
+
+        // const fond = map.createImageLayer(
+        //     "neurone",
+        //     tileset
+        // );
+
+
+        // const neurones_1 = map.createImageLayer(
+        //     "neurone_1",
+        //     tileset
+        // );
+
+        // const neurones_2 = map.createImageLayer(
+        //     "neurone_2",
+        //     tileset
+        // );
+
+        const plateformes = map.createLayer(
+            "Calque de Tuiles 1",
+            tileset
+        );
+
+        plateformes.depth = 0;
+        plateformes.setCollisionByProperty({ estSolide: true });
+
+        const portail1 = map.createLayer(
+            "portail1",
+            tileset
+        );
+        portail1.setCollisionByProperty({ portail1: true });
+
+        const trou = map.createLayer(
+            "trou",
+            tileset
+
+        )
+
+        trou.setAlpha(1);
+
+        trou.setCollisionByProperty({ trou: true });
 
         this.trous = this.physics.add.staticGroup();
-        this.trou1 = this.trous.create(328, 96, 'trou')
+        this.trou1 = this.trous.create(550, 150, 'trou')
 
 
         this.buttons = this.physics.add.staticGroup();
-        this.button1 = this.buttons.create(100, 100, 'button_unactivated');
-        this.button2 = this.buttons.create(24, 20, 'button_unactivated');
+        this.button1 = this.buttons.create(200, 100, 'button_unactivated');
+        this.button2 = this.buttons.create(100, 150, 'button_unactivated');
 
-        this.physics.world.setBounds(0, 0, 384, 192);
 
-        this.player = this.physics.add.sprite(50, 50, 'perso');
+
+        this.player = this.physics.add.sprite(2000, 1000, 'perso');
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
 
         this.player.body.setSize(20, 16);
         this.player.body.setOffset(5, 45);
 
-        this.cameras.main.setBounds(0, 0, 384, 192);
+        this.cameras.main.setBounds(0, 0, 3200, 1280);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2)
 
         // this.physics.add.overlap(this.player, this.platforms, checkBounds, null, this);
+        this.physics.add.collider(this.player, plateformes);
         this.physics.add.overlap(this.player, this.button1, activate1, null, this);
         this.physics.add.overlap(this.player, this.button2, activate2, null, this);
-        this.collider = this.physics.add.overlap(this.player, this.trou1, this.varFall, null, this);
+        this.collider = this.physics.add.collider(this.player, portail1, passageScene2, null, this);
+        this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
+        
 
 
 
@@ -78,7 +141,8 @@ class test_mecaniques extends Phaser.Scene {
 
         this.physics.add.collider(this.player, this.monstre, ennemyCollider, null, this);
 
-        this.vie = this.add.sprite(300, 170, 'vie')
+        this.vie = this.add.sprite(370, 220, 'vie');
+        this.vie.setScrollFactor(0);
 
 
 
@@ -172,6 +236,11 @@ class test_mecaniques extends Phaser.Scene {
             this.scene.scene.button2Activated = true;
         }
 
+        function passageScene2() {
+            this.scene.start("scene2");
+            // , { positionX: this.positionX, positionY: this.positionY });
+        }
+
         function ennemyCollider() {
             if (this.scene.scene.isAttacking) {
                 this.scene.scene.monstre.destroy();
@@ -191,15 +260,33 @@ class test_mecaniques extends Phaser.Scene {
         }
 
 
+        this.varBridge = function bridgeActivation() {
+            console.log("oui")
+            this.bridgeAppeared = true;
+            const bridge = map.createLayer(
+                "pont",
+                tileset
+            );
+            this.player.depth = 2;
+            bridge.depth = 1;
+        }
 
+        this.varTrou = function saut() {
+            this.scene.scene.isJumping = true;
+            this.physics.world.removeCollider(this.collider);
+            this.scene.scene.player.anims.play('turn');
+            this.scene.scene.player.setAccelerationX(10000);
+            setTimeout(() => {
+                this.scene.scene.player.setAccelerationX(0);
+                this.scene.scene.collider = this.physics.add.collider(this.scene.scene.player, trou, fall, null, this);
+                this.scene.scene.isJumping = false;
+            }, 800);
 
+        }
+
+        this.add.tileSprite(1600, 640, 3200, 1280, 'fog').setScrollFactor(0.80);
         this.cursors = this.input.keyboard.createCursorKeys();
         this.cursors2 = this.input.keyboard.addKeys('space, A');
-
-
-
-
-
 
     }
 
@@ -213,15 +300,9 @@ class test_mecaniques extends Phaser.Scene {
 
 
         if (this.cursors2.space.isDown) {
-            this.isJumping = true;
-            this.physics.world.removeCollider(this.collider);
-            this.player.anims.play('turn');
-            this.player.setAccelerationX(10000);
-            setTimeout(() => {
-                this.player.setAccelerationX(0);
-                this.isJumping = false;
-                this.collider = this.physics.add.overlap(this.player, this.trou1, this.varFall, null, this);
-            }, 500);
+            if (!this.isJumping) {
+                this.varTrou();
+            }
         }
 
 
@@ -240,58 +321,65 @@ class test_mecaniques extends Phaser.Scene {
         }
 
         if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
-            this.bridgeAppeared = true;
-            this.bridge = this.platforms.create(232, 72, 'bridge');
-            this.player.depth = 1;
-            this.bridge.depth = 0;
+            this.physics.world.removeCollider(this.collider2);
+            this.varBridge();
         }
 
         if (this.cursors2.A.isDown && this.keyJustDown == "down") {
-            this.isAttacking = true;
-            this.player.body.setSize(20, 40);
-            this.player.body.setOffset(5, 45);
-
-            setTimeout(() => {
-                this.player.body.setSize(20, 16);
+            if (!this.isAttacking) {
+                this.isAttacking = true;
+                this.player.body.setSize(20, 40);
                 this.player.body.setOffset(5, 45);
-                this.isAttacking = false;
-            }, 500);
+
+                setTimeout(() => {
+                    this.player.body.setSize(20, 16);
+                    this.player.body.setOffset(5, 45);
+                    this.isAttacking = false;
+                }, 500);
+            }
+
         }
 
         if (this.cursors2.A.isDown && this.keyJustDown == "up") {
-            this.isAttacking = true;
-            this.player.body.setSize(20, 40);
-            this.player.body.setOffset(5, 0);
+            if (!this.isAttacking) {
+                this.isAttacking = true;
+                this.player.body.setSize(20, 40);
+                this.player.body.setOffset(5, 0);
 
-            setTimeout(() => {
-                this.player.body.setSize(20, 16);
-                this.player.body.setOffset(5, 45);
-                this.isAttacking = false;
-            }, 500);
+                setTimeout(() => {
+                    this.player.body.setSize(20, 16);
+                    this.player.body.setOffset(5, 45);
+                    this.isAttacking = false;
+                }, 500);
+            }
         }
 
         if (this.cursors2.A.isDown && this.keyJustDown == "right") {
-            this.isAttacking = true;
-            this.player.body.setSize(40, 20);
-            this.player.body.setOffset(15, 25);
+            if (!this.isAttacking) {
+                this.isAttacking = true;
+                this.player.body.setSize(40, 20);
+                this.player.body.setOffset(15, 25);
 
-            setTimeout(() => {
-                this.player.body.setSize(20, 16);
-                this.player.body.setOffset(5, 45);
-                this.isAttacking = false;
-            }, 500);
+                setTimeout(() => {
+                    this.player.body.setSize(20, 16);
+                    this.player.body.setOffset(5, 45);
+                    this.isAttacking = false;
+                }, 500);
+            }
         }
 
         if (this.cursors2.A.isDown && this.keyJustDown == "left") {
-            this.isAttacking = true;
-            this.player.body.setSize(40, 20);
-            this.player.body.setOffset(-15, 25);
+            if (!this.isAttacking) {
+                this.isAttacking = true;
+                this.player.body.setSize(40, 20);
+                this.player.body.setOffset(-15, 25);
 
-            setTimeout(() => {
-                this.player.body.setSize(20, 16);
-                this.player.body.setOffset(5, 45);
-                this.isAttacking = false;
-            }, 500);
+                setTimeout(() => {
+                    this.player.body.setSize(20, 16);
+                    this.player.body.setOffset(5, 45);
+                    this.isAttacking = false;
+                }, 500);
+            }
         }
 
 
