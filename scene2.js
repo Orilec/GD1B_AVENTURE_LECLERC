@@ -91,6 +91,12 @@ class scene2 extends Phaser.Scene {
         );
         portail1.setCollisionByProperty({ portail1: true });
 
+        const portail2 = map2.createLayer(
+            "portail2",
+            tileset
+        );
+        portail2.setCollisionByProperty({ portail2: true });
+
         // const trou = map2.createLayer(
         //     "trou",
         //     tileset
@@ -125,6 +131,7 @@ class scene2 extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.button1, activate1, null, this);
         this.physics.add.overlap(this.player, this.button2, activate2, null, this);
         this.collider = this.physics.add.collider(this.player, portail1, passageScene1, null, this);
+        this.collider = this.physics.add.collider(this.player, portail2, passageScene3, null, this);
         // this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
         
 
@@ -234,6 +241,12 @@ class scene2 extends Phaser.Scene {
 
         function passageScene1() {
             this.scene.start("test_mecaniques");
+            // , { positionX: this.positionX, positionY: this.positionY });
+        }
+
+        
+        function passageScene3() {
+            this.scene.start("scene3");
             // , { positionX: this.positionX, positionY: this.positionY });
         }
 
