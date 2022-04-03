@@ -3,7 +3,7 @@ class scene3 extends Phaser.Scene {
         super("scene3");
 
     }
-    init(data) { this.positionX = data.positionX, this.positionY = data.positionY };
+    init(data) { this.sceneQuitee = data.sceneQuitee};
     preload() {
         this.load.image('map', 'assets/map_test_02.png');
         this.load.image('button_unactivated', 'assets/bouton1_rouge.png');
@@ -97,6 +97,12 @@ class scene3 extends Phaser.Scene {
         );
         portail2.setCollisionByProperty({ portail2: true });
 
+        const portail3 = map3.createLayer(
+            "portail3",
+            tileset
+        );
+        portail3.setCollisionByProperty({ portail3: true });
+
         const trou = map3.createLayer(
             "trou",
             tileset
@@ -131,9 +137,10 @@ class scene3 extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.button1, activate1, null, this);
         this.physics.add.overlap(this.player, this.button2, activate2, null, this);
         // this.collider = this.physics.add.collider(this.player, portail1, passageScene1, null, this);
-        this.collider = this.physics.add.collider(this.player, portail2, passageScene3, null, this);
+        this.collider = this.physics.add.collider(this.player, portail2, passageScene2, null, this);
+        this.collider = this.physics.add.collider(this.player, portail3, passageScene1, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
-        
+
 
 
 
@@ -240,13 +247,13 @@ class scene3 extends Phaser.Scene {
         }
 
         function passageScene1() {
-            this.scene.start("test_mecaniques");
+            this.scene.start("test_mecaniques", { sceneQuitee : "scene3"});
             // , { positionX: this.positionX, positionY: this.positionY });
         }
+        // { positionX: 1550, positionY: 350, first: false}
 
-        
-        function passageScene3() {
-            this.scene.start("scene3");
+        function passageScene2() {
+            this.scene.start("scene2", { sceneQuitee : "scene3"});
             // , { positionX: this.positionX, positionY: this.positionY });
         }
 
@@ -283,8 +290,15 @@ class scene3 extends Phaser.Scene {
         this.varTrou = function saut() {
             this.scene.scene.isJumping = true;
             this.physics.world.removeCollider(this.collider);
-            this.scene.scene.player.anims.play('turn');
-            this.scene.scene.player.setAccelerationX(10000);
+            if (this.scene.scene.keyJustDown == "right") {
+                this.scene.scene.player.anims.play('turn');
+                this.scene.scene.player.setAccelerationX(10000);
+            }
+            else {
+                this.scene.scene.player.anims.play('turn');
+                this.scene.scene.player.setAccelerationX(-10000);
+            }
+
             setTimeout(() => {
                 this.scene.scene.player.setAccelerationX(0);
                 this.scene.scene.collider = this.physics.add.collider(this.scene.scene.player, trou, fall, null, this);
@@ -309,7 +323,7 @@ class scene3 extends Phaser.Scene {
 
 
         if (this.cursors2.space.isDown) {
-            if (!this.isJumping) {
+            if (!this.isJumping && !this.isMoving) {
                 this.varTrou();
             }
         }
@@ -393,20 +407,22 @@ class scene3 extends Phaser.Scene {
 
 
 
-
         if (this.cursors.left.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(0);
             this.player.setVelocityX(-240);
             this.player.anims.play('left', true);
             this.keyJustDown = "left";
         }
         else if (this.cursors.right.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(0);
             this.player.setVelocityX(240);
             this.player.anims.play('right', true);
             this.keyJustDown = "right";
         }
         else if (this.cursors.up.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(-240);
             this.player.setVelocityX(0);
             this.player.anims.play('up', true);
@@ -414,6 +430,7 @@ class scene3 extends Phaser.Scene {
 
         }
         else if (this.cursors.down.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(240);
             this.player.setVelocityX(0);
             this.player.anims.play('down', true);
@@ -421,6 +438,7 @@ class scene3 extends Phaser.Scene {
 
         }
         else { // sinon
+            this.isMoving = false;
             this.player.setVelocityX(0); //vitesse nulle
             this.player.setVelocityY(0);
             this.player.anims.play('turn'); //animation fait face caméra

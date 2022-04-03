@@ -3,7 +3,7 @@ class test_mecaniques extends Phaser.Scene {
         super("test_mecaniques");
 
     }
-    init(data) { this.positionX = data.positionX, this.positionY = data.positionY };
+    init(data) { this.sceneQuitee = data.sceneQuitee};
     preload() {
         this.load.image('map', 'assets/map_test_02.png');
         this.load.image('button_unactivated', 'assets/bouton1_rouge.png');
@@ -112,8 +112,16 @@ class test_mecaniques extends Phaser.Scene {
         this.button2 = this.buttons.create(100, 150, 'button_unactivated');
 
 
+        if (this.sceneQuitee == "scene3") {
+            this.player = this.physics.add.sprite(2000, 45, 'perso'); 
+        }
+        else if (this.sceneQuitee == "scene2"){
+            this.player = this.physics.add.sprite(500, 500, 'perso');
+        }
+        else {
+            this.player = this.physics.add.sprite(2000, 1000, 'perso');
+        }
 
-        this.player = this.physics.add.sprite(2000, 1000, 'perso');
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
 
@@ -130,7 +138,7 @@ class test_mecaniques extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.button2, activate2, null, this);
         this.collider = this.physics.add.collider(this.player, portail1, passageScene2, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
-        
+
 
 
 
@@ -237,7 +245,7 @@ class test_mecaniques extends Phaser.Scene {
         }
 
         function passageScene2() {
-            this.scene.start("scene2");
+            this.scene.start("scene2", { sceneQuitee: "scene1" });
             // , { positionX: this.positionX, positionY: this.positionY });
         }
 
@@ -274,8 +282,15 @@ class test_mecaniques extends Phaser.Scene {
         this.varTrou = function saut() {
             this.scene.scene.isJumping = true;
             this.physics.world.removeCollider(this.collider);
-            this.scene.scene.player.anims.play('turn');
-            this.scene.scene.player.setAccelerationX(10000);
+            if (this.scene.scene.keyJustDown == "right") {
+                this.scene.scene.player.anims.play('turn');
+                this.scene.scene.player.setAccelerationX(10000);
+            }
+            else {
+                this.scene.scene.player.anims.play('turn');
+                this.scene.scene.player.setAccelerationX(-10000);
+            }
+
             setTimeout(() => {
                 this.scene.scene.player.setAccelerationX(0);
                 this.scene.scene.collider = this.physics.add.collider(this.scene.scene.player, trou, fall, null, this);
@@ -300,7 +315,7 @@ class test_mecaniques extends Phaser.Scene {
 
 
         if (this.cursors2.space.isDown) {
-            if (!this.isJumping) {
+            if (!this.isJumping && !this.isMoving) {
                 this.varTrou();
             }
         }
@@ -386,18 +401,21 @@ class test_mecaniques extends Phaser.Scene {
 
 
         if (this.cursors.left.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(0);
             this.player.setVelocityX(-240);
             this.player.anims.play('left', true);
             this.keyJustDown = "left";
         }
         else if (this.cursors.right.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(0);
             this.player.setVelocityX(240);
             this.player.anims.play('right', true);
             this.keyJustDown = "right";
         }
         else if (this.cursors.up.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(-240);
             this.player.setVelocityX(0);
             this.player.anims.play('up', true);
@@ -405,6 +423,7 @@ class test_mecaniques extends Phaser.Scene {
 
         }
         else if (this.cursors.down.isDown) {
+            this.isMoving = true;
             this.player.setVelocityY(240);
             this.player.setVelocityX(0);
             this.player.anims.play('down', true);
@@ -412,6 +431,7 @@ class test_mecaniques extends Phaser.Scene {
 
         }
         else { // sinon
+            this.isMoving = false;
             this.player.setVelocityX(0); //vitesse nulle
             this.player.setVelocityY(0);
             this.player.anims.play('turn'); //animation fait face caméra
