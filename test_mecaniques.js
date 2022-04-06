@@ -22,6 +22,8 @@ class test_mecaniques extends Phaser.Scene {
             { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('vie', 'assets/vie_spritesheet.png',
             { frameWidth: 96, frameHeight: 64 });
+            this.load.spritesheet('attack', 'assets/attack_spritesheet.png',
+            { frameWidth: 64, frameHeight: 64 });
 
         this.load.image("tileset", "assets/tileset.png");
         this.load.tilemapTiledJSON("map", "map.json");
@@ -152,13 +154,36 @@ class test_mecaniques extends Phaser.Scene {
         this.vie = this.add.sprite(370, 220, 'vie');
         this.vie.setScrollFactor(0);
 
-
+        this.anims.create({
+            key: 'attack_right',
+            frames: this.anims.generateFrameNumbers('attack', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: 1
+        });
+        this.anims.create({
+            key: 'attack_up',
+            frames: this.anims.generateFrameNumbers('attack', { start: 12, end: 17}),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'attack_left',
+            frames: this.anims.generateFrameNumbers('attack', { start: 6, end: 11}),
+            frameRate: 10,
+            repeat: 1
+        });
+        this.anims.create({
+            key: 'attack_down',
+            frames: this.anims.generateFrameNumbers('attack', { start: 18, end: 23}),
+            frameRate: 10,
+            repeat: 1
+        });
 
         this.anims.create({
             key: 'up',
             frames: this.anims.generateFrameNumbers('perso', { start: 0, end: 5 }),
             frameRate: 10,
-            repeat: -1
+            repeat: 1
         });
         this.anims.create({
             key: 'down',
@@ -344,8 +369,8 @@ class test_mecaniques extends Phaser.Scene {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(20, 40);
-                this.player.body.setOffset(5, 45);
-
+                this.player.body.setOffset(15, 30);
+                this.player.anims.play('attack_down');
                 setTimeout(() => {
                     this.player.body.setSize(20, 16);
                     this.player.body.setOffset(5, 45);
@@ -359,8 +384,8 @@ class test_mecaniques extends Phaser.Scene {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(20, 40);
-                this.player.body.setOffset(5, 0);
-
+                this.player.body.setOffset(15, 0);
+                this.player.anims.play('attack_up', true);
                 setTimeout(() => {
                     this.player.body.setSize(20, 16);
                     this.player.body.setOffset(5, 45);
@@ -374,7 +399,7 @@ class test_mecaniques extends Phaser.Scene {
                 this.isAttacking = true;
                 this.player.body.setSize(40, 20);
                 this.player.body.setOffset(15, 25);
-
+                this.player.anims.play('attack_right', true);
                 setTimeout(() => {
                     this.player.body.setSize(20, 16);
                     this.player.body.setOffset(5, 45);
@@ -387,8 +412,8 @@ class test_mecaniques extends Phaser.Scene {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(40, 20);
-                this.player.body.setOffset(-15, 25);
-
+                this.player.body.setOffset(0, 25);
+                this.player.anims.play('attack_left', true);
                 setTimeout(() => {
                     this.player.body.setSize(20, 16);
                     this.player.body.setOffset(5, 45);
@@ -430,7 +455,7 @@ class test_mecaniques extends Phaser.Scene {
             this.keyJustDown = "down";
 
         }
-        else { // sinon
+        else if(!this.isAttacking) { // sinon
             this.isMoving = false;
             this.player.setVelocityX(0); //vitesse nulle
             this.player.setVelocityY(0);
