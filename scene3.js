@@ -15,6 +15,7 @@ class scene3 extends Phaser.Scene {
         this.load.image('fond', 'assets/fond.png');
         this.load.image('neurone_1', 'assets/neurone_1.png');
         this.load.image('neurone_2', 'assets/neurone_2.png');
+        this.load.image('saut', 'assets/item_saut.png');
         this.load.spritesheet('perso', 'assets/sprite_sheet_heros.png',
             { frameWidth: 32, frameHeight: 64 });
         this.load.spritesheet('monstre', 'assets/creature_spritesheet.png',
@@ -49,6 +50,7 @@ class scene3 extends Phaser.Scene {
 
         this.button1Activated = false;
         this.button2Activated = false;
+        this.button3Activated = false;
         this.bridgeAppeared = false;
         this.keyJustDown = "down";
         this.isAttacking = false;
@@ -111,9 +113,15 @@ class scene3 extends Phaser.Scene {
             "trou",
             tileset
 
-        )
-
+        );
         trou.setCollisionByProperty({ trou: true });
+
+        const trou2 = map3.createLayer(
+            "trou2",
+            tileset
+
+        );
+        trou2.setCollisionByProperty({ trou2: true });
 
         this.regen = this.physics.add.group()
 
@@ -124,6 +132,43 @@ class scene3 extends Phaser.Scene {
 
             const enemySprite = this.ennemies.create(enemy.x, enemy.y, 'monstre').setOrigin(0);
             enemySprite.setPushable(false);
+
+
+        })
+        this.plaque_1 = this.physics.add.group();
+        map3.getObjectLayer('plaque_1').objects.forEach((plaque) => {
+
+
+            const plaqueSprite = this.plaque_1.create(plaque.x, plaque.y, 'button_unactivated').setOrigin(0);
+            plaqueSprite.setPushable(false);
+
+
+        })
+        this.plaque_2 = this.physics.add.group();
+        map3.getObjectLayer('plaque_2').objects.forEach((plaque) => {
+
+
+            const plaqueSprite = this.plaque_2.create(plaque.x, plaque.y, 'button_unactivated').setOrigin(0);
+            plaqueSprite.setPushable(false);
+
+
+        })
+        this.plaque_3 = this.physics.add.group();
+        map3.getObjectLayer('plaque_3').objects.forEach((plaque) => {
+
+
+            const plaqueSprite = this.plaque_3.create(plaque.x, plaque.y, 'button_unactivated').setOrigin(0);
+            plaqueSprite.setPushable(false);
+
+        })
+
+        this.saut = this.physics.add.group();
+        map3.getObjectLayer('saut').objects.forEach((saut) => {
+
+
+            const sautSprite = this.saut.create(saut.x, saut.y, 'saut').setOrigin(0);
+            sautSprite.setScale(2);
+
 
 
         })
@@ -155,14 +200,18 @@ class scene3 extends Phaser.Scene {
 
         // this.physics.add.overlap(this.player, this.platforms, checkBounds, null, this);
         this.physics.add.collider(this.player, plateformes);
-        this.physics.add.overlap(this.player, this.button1, activate1, null, this);
-        this.physics.add.overlap(this.player, this.button2, activate2, null, this);
+        this.physics.add.collider(this.player, this.plaque_1, activate1, null, this);
+        this.physics.add.collider(this.player, this.plaque_2, activate2, null, this);
+        this.physics.add.collider(this.player, this.plaque_3, activate3, null, this);
         // this.collider = this.physics.add.collider(this.player, portail1, passageScene1, null, this);
         this.physics.add.collider(this.player, portail2, passageScene2, null, this);
         this.physics.add.collider(this.player, portail3, passageScene1, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
+        this.collider2 = this.physics.add.collider(this.player, trou2, fall, null, this);
         this.physics.add.collider(this.player, this.ennemies, ennemyCollider, null, this);
         this.physics.add.collider(this.player, this.regen, regenVie, null, this);
+        this.physics.add.collider(this.player, this.saut, itemSaut, null, this);
+
 
 
 
@@ -283,36 +332,41 @@ class scene3 extends Phaser.Scene {
         });
         this.anims.create({
             key: 'inv_empty',
-            frames: this.anims.generateFrameNumbers('vie', { start: 0, end: 0 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 0, end: 0 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'inv_spear',
-            frames: this.anims.generateFrameNumbers('vie', { start: 1, end: 1 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 1, end: 1 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'inv_jump',
-            frames: this.anims.generateFrameNumbers('vie', { start: 2, end: 2 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 2, end: 2 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'inv_full',
-            frames: this.anims.generateFrameNumbers('vie', { start: 3, end: 3 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 3, end: 3 }),
             frameRate: 10,
             repeat: -1
         });
-        function activate1() {
-            this.scene.scene.button1.setTexture('button_activated')
+        function activate1(player, button) {
+            button.setTexture('button_activated')
             this.scene.scene.button1Activated = true;
         }
 
-        function activate2() {
-            this.scene.scene.button2.setTexture('button_activated')
+        function activate2(player, button) {
+            button.setTexture('button_activated')
             this.scene.scene.button2Activated = true;
+        }
+
+        function activate3(player, button) {
+            button.setTexture('button_activated')
+            this.scene.scene.button3Activated = true;
         }
 
         function passageScene1() {
@@ -333,6 +387,12 @@ class scene3 extends Phaser.Scene {
                 this.scene.scene.health = 3;
             }
         }
+
+        function itemSaut(player, item) {
+            item.destroy();
+            this.scene.scene.jumpCollected = true;
+        }
+
 
         function ennemyCollider(player, ennemy) {
             if (this.scene.scene.isAttacking) {
@@ -358,9 +418,8 @@ class scene3 extends Phaser.Scene {
 
 
         this.varBridge = function bridgeActivation() {
-            console.log("oui")
-            this.bridgeAppeared = true;
-            const bridge = map2.createLayer(
+            this.scene.scene.bridgeAppeared = true;
+            const bridge = map3.createLayer(
                 "pont",
                 tileset
             );
@@ -402,35 +461,32 @@ class scene3 extends Phaser.Scene {
         if (this.gameOver) { return; }
 
         this.ennemies.children.each(function (ennemy) {
-            
-            this.timer+= delta;
-            if (this.timer > Phaser.Math.Between(100, 300)) {
-                this.ennemy_X = ennemy.x
-                this.ennemy_Y = ennemy.y
-                this.timer = 0;
 
-            }
+            this.scene.scene.timer += delta;
 
-            if (ennemy.y > (this.ennemy_Y+50)){
+            if (this.scene.scene.timer > 0 && this.scene.scene.timer < 1000) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(50);
+                ennemy.setVelocityX(100);
                 ennemy.anims.play('m_right', true);
             }
 
-            else if (ennemy.y > (this.ennemy_Y-50)){
+            else if (this.scene.scene.timer > 3000 && this.scene.scene.timer < 4500) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(-50);
+                ennemy.setVelocityX(-100);
                 ennemy.anims.play('m_left', true);
             }
-            else if (ennemy.x > (this.ennemy_X-50)){
+            else if (this.scene.scene.timer > 1500 && this.scene.scene.timer < 3000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(-50);
+                ennemy.setVelocityY(-100);
                 ennemy.anims.play('m_up', true);
             }
-            else if (ennemy.x > (this.ennemy_X+50)){
+            else if (this.scene.scene.timer > 4500) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(50);
+                ennemy.setVelocityY(100);
                 ennemy.anims.play('m_down', true);
+                if (this.scene.scene.timer > 6000){
+                    this.scene.scene.timer = 0;
+                }
             }
 
         }, this);
@@ -456,11 +512,25 @@ class scene3 extends Phaser.Scene {
             this.gameOver = true; //si les pvs sont à 0, game over
         }
 
-        if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
+        if (this.spearCollected && !this.jumpCollected) {
+            this.inventaire.anims.play('inv_spear', true);
+        }
+        else if (this.jumpCollected && !this.keyCollected) {
+            console.log("oui");
+            this.inventaire.anims.play('inv_jump', true);
+        }
+        else if (this.keyCollected) {
+            this.inventaire.anims.play('inv_full', true);
+        }
+        else {
+            this.inventaire.anims.play('inv_empty', true);
+        }
+
+        if (this.button1Activated && this.button2Activated && this.button3Activated && !this.bridgeAppeared) {
             this.physics.world.removeCollider(this.collider2);
             this.varBridge();
         }
-        if (this.cursors2.A.isDown && this.keyJustDown == "down") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "down") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(20, 40);
@@ -475,7 +545,7 @@ class scene3 extends Phaser.Scene {
 
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "up") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "up") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(20, 40);
@@ -489,7 +559,7 @@ class scene3 extends Phaser.Scene {
             }
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "right") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "right") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(40, 20);
@@ -503,7 +573,7 @@ class scene3 extends Phaser.Scene {
             }
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "left") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "left") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(40, 20);
@@ -516,7 +586,6 @@ class scene3 extends Phaser.Scene {
                 }, 500);
             }
         }
-
 
 
 

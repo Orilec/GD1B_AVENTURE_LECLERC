@@ -41,8 +41,19 @@ class scene1 extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, 3200, 1280);
 
         function fall() {
-            this.scene.scene.gameOver = true;
-            this.scene.scene.player.destroy();
+            this.scene.scene.isFalling = true;
+            this.scene.scene.player.setAlpha(0);
+            this.scene.scene.health -= 1;
+            if(this.scene.scene.health < 1){
+                this.scene.scene.gameover = true;
+            }
+            setTimeout(() => {
+                console.log("oui");
+                this.scene.scene.player.x = this.scene.scene.X_saved;
+                this.scene.scene.player.y =  this.scene.scene.Y_saved;
+                this.scene.scene.player.setAlpha(1);
+                this.scene.scene.isFalling = false;
+            }, 1000);
         }
 
         this.add.tileSprite(1600, 640, 3200, 1280, 'fond');
@@ -58,6 +69,7 @@ class scene1 extends Phaser.Scene {
         this.invulnerable = false;
         this.monstre_alive = true;
         this.monstreUp = true;
+        this.isFalling = false;
 
         
         if (this.sceneQuitee!= "scene2" && this.sceneQuitee!= "scene3" && this.sceneQuitee!= "scene4"){
@@ -152,19 +164,18 @@ class scene1 extends Phaser.Scene {
 
 
         if (this.sceneQuitee == "scene3") {
-            this.player = this.physics.add.sprite(2000, 43, 'perso');
+            this.player = this.physics.add.sprite(1990, 20, 'perso');
         }
         else if (this.sceneQuitee == "scene2") {
             this.player = this.physics.add.sprite(500, 500, 'perso');
         }
         else if (this.sceneQuitee == "scene4") {
-            this.player = this.physics.add.sprite(2900, 500, 'perso');
+            this.player = this.physics.add.sprite(2850, 480, 'perso');
         }
         else {
             this.player = this.physics.add.sprite(2000, 1000, 'perso');
         }
 
-        this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
 
         this.player.body.setSize(20, 16);
@@ -306,25 +317,25 @@ class scene1 extends Phaser.Scene {
         });
         this.anims.create({
             key: 'inv_empty',
-            frames: this.anims.generateFrameNumbers('vie', { start: 0, end: 0 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 0, end: 0 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'inv_spear',
-            frames: this.anims.generateFrameNumbers('vie', { start: 1, end: 1 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 1, end: 1 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'inv_jump',
-            frames: this.anims.generateFrameNumbers('vie', { start: 2, end: 2 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 2, end: 2 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'inv_full',
-            frames: this.anims.generateFrameNumbers('vie', { start: 3, end: 3 }),
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 3, end: 3 }),
             frameRate: 10,
             repeat: -1
         });
@@ -417,6 +428,7 @@ class scene1 extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
         this.cursors2 = this.input.keyboard.addKeys('space, A');
         this.timer = 0;
+        this.timer2 = 0;
 
     }
 
@@ -426,38 +438,43 @@ class scene1 extends Phaser.Scene {
 
     update(time, delta) {
 
-        if (this.gameOver) { return; }
+        if (this.gameOver) { return}
+
+        this.timer2 += delta;
+        if (this.timer2 > 2000){
+            this.X_saved = this.player.x;
+            this.Y_saved = this.player.y;
+            this.timer2 = 0;
+        }
+        
 
         this.ennemies.children.each(function (ennemy) {
 
-            this.timer += delta;
-            if (this.timer > Phaser.Math.Between(100, 300)) {
-                this.ennemy_X = ennemy.x
-                this.ennemy_Y = ennemy.y
-                this.timer = 0;
+            this.scene.scene.timer += delta;
 
-            }
-
-            if (ennemy.y > (this.ennemy_Y + 50)) {
+            if (this.scene.scene.timer > 0 && this.scene.scene.timer < 1000) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(50);
+                ennemy.setVelocityX(100);
                 ennemy.anims.play('m_right', true);
             }
 
-            else if (ennemy.y > (this.ennemy_Y - 50)) {
+            else if (this.scene.scene.timer > 3000 && this.scene.scene.timer < 4500) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(-50);
+                ennemy.setVelocityX(-100);
                 ennemy.anims.play('m_left', true);
             }
-            else if (ennemy.x > (this.ennemy_X - 50)) {
+            else if (this.scene.scene.timer > 1500 && this.scene.scene.timer < 3000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(-50);
+                ennemy.setVelocityY(-100);
                 ennemy.anims.play('m_up', true);
             }
-            else if (ennemy.x > (this.ennemy_X + 50)) {
+            else if (this.scene.scene.timer > 4500) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(50);
+                ennemy.setVelocityY(100);
                 ennemy.anims.play('m_down', true);
+                if (this.scene.scene.timer > 6000){
+                    this.scene.scene.timer = 0;
+                }
             }
 
         }, this);
@@ -487,12 +504,25 @@ class scene1 extends Phaser.Scene {
             this.gameOver = true; //si les pvs sont à 0, game over
         }
 
+        if (this.spearCollected) {
+            this.inventaire.anims.play('inv_spear', true);
+        }
+        else if (this.jumpCollected) {
+            this.inventaire.anims.play('inv_jump', true);
+        }
+        else if (this.keyCollected) {
+            this.inventaire.anims.play('inv_full', true);
+        }
+        else {
+            this.inventaire.anims.play('inv_empty', true);
+        }
+
         if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
             this.physics.world.removeCollider(this.collider2);
             this.varBridge();
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "down") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "down") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(20, 40);
@@ -507,7 +537,7 @@ class scene1 extends Phaser.Scene {
 
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "up") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "up") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(20, 40);
@@ -521,7 +551,7 @@ class scene1 extends Phaser.Scene {
             }
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "right") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "right") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(40, 20);
@@ -535,7 +565,7 @@ class scene1 extends Phaser.Scene {
             }
         }
 
-        if (this.cursors2.A.isDown && this.keyJustDown == "left") {
+        if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "left") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
                 this.player.body.setSize(40, 20);
@@ -551,43 +581,45 @@ class scene1 extends Phaser.Scene {
 
 
 
+if (!this.isFalling){
+    if (this.cursors.left.isDown) {
+        this.isMoving = true;
+        this.player.setVelocityY(0);
+        this.player.setVelocityX(-240);
+        this.player.anims.play('left', true);
+        this.keyJustDown = "left";
+    }
+    else if (this.cursors.right.isDown) {
+        this.isMoving = true;
+        this.player.setVelocityY(0);
+        this.player.setVelocityX(240);
+        this.player.anims.play('right', true);
+        this.keyJustDown = "right";
+    }
+    else if (this.cursors.up.isDown) {
+        this.isMoving = true;
+        this.player.setVelocityY(-240);
+        this.player.setVelocityX(0);
+        this.player.anims.play('up', true);
+        this.keyJustDown = "up";
 
-        if (this.cursors.left.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(0);
-            this.player.setVelocityX(-240);
-            this.player.anims.play('left', true);
-            this.keyJustDown = "left";
-        }
-        else if (this.cursors.right.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(0);
-            this.player.setVelocityX(240);
-            this.player.anims.play('right', true);
-            this.keyJustDown = "right";
-        }
-        else if (this.cursors.up.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(-240);
-            this.player.setVelocityX(0);
-            this.player.anims.play('up', true);
-            this.keyJustDown = "up";
+    }
+    else if (this.cursors.down.isDown) {
+        this.isMoving = true;
+        this.player.setVelocityY(240);
+        this.player.setVelocityX(0);
+        this.player.anims.play('down', true);
+        this.keyJustDown = "down";
 
-        }
-        else if (this.cursors.down.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(240);
-            this.player.setVelocityX(0);
-            this.player.anims.play('down', true);
-            this.keyJustDown = "down";
+    }
+    else if (!this.isAttacking) { // sinon
+        this.isMoving = false;
+        this.player.setVelocityX(0); //vitesse nulle
+        this.player.setVelocityY(0);
+        this.player.anims.play('turn'); //animation fait face caméra
+    }
+}
 
-        }
-        else if (!this.isAttacking) { // sinon
-            this.isMoving = false;
-            this.player.setVelocityX(0); //vitesse nulle
-            this.player.setVelocityY(0);
-            this.player.anims.play('turn'); //animation fait face caméra
-        }
 
 
 
