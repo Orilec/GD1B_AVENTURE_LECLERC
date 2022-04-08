@@ -14,7 +14,7 @@ class menu extends Phaser.Scene {
         var playButton =  this.add.image(300, 200, 'play').setInteractive() ;
 
         playButton.on('pointerdown', function(pointer){
-            this.scene.scene.start("test_mecaniques");
+            this.scene.scene.start("scene1");
 
         });
     }

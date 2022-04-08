@@ -11,6 +11,6 @@ var config = {
         }
     },
 
-    scene: [menu, test_mecaniques, scene3, scene2]
+    scene: [menu, scene1, scene3, scene2, scene4]
 };
 new Phaser.Game(config);

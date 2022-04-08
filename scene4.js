@@ -1,6 +1,6 @@
-class scene3 extends Phaser.Scene {
+class scene4 extends Phaser.Scene {
     constructor() {
-        super("scene3");
+        super("scene4");
 
     }
     init(data) { this.sceneQuitee = data.sceneQuitee, this.spearCollected = data.spearCollected, this.jumpCollected = data.jumpCollected, this.keyCollected = data.keyCollected, this.health = data.health  };
@@ -28,7 +28,7 @@ class scene3 extends Phaser.Scene {
 
 
         this.load.image("tileset", "assets/tileset.png");
-        this.load.tilemapTiledJSON("map3", "map3.json");
+        this.load.tilemapTiledJSON("map4", "map4.json");
 
 
     }
@@ -37,7 +37,7 @@ class scene3 extends Phaser.Scene {
 
     create() {
 
-        this.physics.world.setBounds(0, 0, 2240, 1600);
+        this.physics.world.setBounds(0, 0, 1280, 1280);
 
         function fall() {
             this.scene.scene.gameOver = true;
@@ -56,9 +56,9 @@ class scene3 extends Phaser.Scene {
         this.invulnerable = false;
         this.monstre_alive = true;
 
-        const map3 = this.add.tilemap("map3");
+        const map4 = this.add.tilemap("map4");
 
-        const tileset = map3.addTilesetImage(
+        const tileset = map4.addTilesetImage(
             "tileset", "tileset"
         );
 
@@ -82,32 +82,32 @@ class scene3 extends Phaser.Scene {
         //     tileset
         // );
 
-        const plateformes = map3.createLayer(
+        const plateformes = map4.createLayer(
             "plateformes",
             tileset
         );
 
         plateformes.setCollisionByProperty({ estSolide: true });
 
-        // const portail1 = map3.createLayer(
+        // const portail1 = map4.createLayer(
         //     "portail1",
         //     tileset
         // );
         // portail1.setCollisionByProperty({ portail1: true });
 
-        const portail2 = map3.createLayer(
-            "portail2",
+        const portail4 = map4.createLayer(
+            "portail4",
             tileset
         );
-        portail2.setCollisionByProperty({ portail2: true });
+        portail4.setCollisionByProperty({ portail4: true });
 
-        const portail3 = map3.createLayer(
-            "portail3",
-            tileset
-        );
-        portail3.setCollisionByProperty({ portail3: true });
+        // const portail3 = map4.createLayer(
+        //     "portail3",
+        //     tileset
+        // );
+        // portail3.setCollisionByProperty({ portail3: true });
 
-        const trou = map3.createLayer(
+        const trou = map4.createLayer(
             "trou",
             tileset
 
@@ -115,18 +115,19 @@ class scene3 extends Phaser.Scene {
 
         trou.setCollisionByProperty({ trou: true });
 
-        this.regen = this.physics.add.group()
+        this.regen = this.physics.add.group();
 
         this.ennemies = this.physics.add.group();
 
-        map3.getObjectLayer('monstres').objects.forEach((enemy) => {
+        map4.getObjectLayer('monstres').objects.forEach((enemy) => {
 
 
             const enemySprite = this.ennemies.create(enemy.x, enemy.y, 'monstre').setOrigin(0);
             enemySprite.setPushable(false);
 
 
-        })
+        });
+
         // this.trous = this.physics.add.staticGroup();
         // this.trou1 = this.trous.create(550, 150, 'trou')
 
@@ -136,20 +137,15 @@ class scene3 extends Phaser.Scene {
         this.button2 = this.buttons.create(100, 150, 'button_unactivated');
 
 
-        if (this.sceneQuitee == "scene2") {
-            this.player = this.physics.add.sprite(370, 450, 'perso');
-        }
-        else {
-            this.player = this.physics.add.sprite(1200, 1500, 'perso');
-        }
 
+        this.player = this.physics.add.sprite(700, 1100, 'perso');
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
 
         this.player.body.setSize(20, 16);
         this.player.body.setOffset(5, 45);
 
-        this.cameras.main.setBounds(0, 0, 2240, 1600);
+        this.cameras.main.setBounds(0, 0, 1280, 1280);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2)
 
@@ -158,8 +154,8 @@ class scene3 extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.button1, activate1, null, this);
         this.physics.add.overlap(this.player, this.button2, activate2, null, this);
         // this.collider = this.physics.add.collider(this.player, portail1, passageScene1, null, this);
-        this.physics.add.collider(this.player, portail2, passageScene2, null, this);
-        this.physics.add.collider(this.player, portail3, passageScene1, null, this);
+        // this.collider = this.physics.add.collider(this.player, portail2, passageScene2, null, this);
+        this.collider = this.physics.add.collider(this.player, portail4, passageScene1, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
         this.physics.add.collider(this.player, this.ennemies, ennemyCollider, null, this);
         this.physics.add.collider(this.player, this.regen, regenVie, null, this);
@@ -281,6 +277,7 @@ class scene3 extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
+
         this.anims.create({
             key: 'inv_empty',
             frames: this.anims.generateFrameNumbers('vie', { start: 0, end: 0 }),
@@ -305,6 +302,7 @@ class scene3 extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
+
         function activate1() {
             this.scene.scene.button1.setTexture('button_activated')
             this.scene.scene.button1Activated = true;
@@ -316,24 +314,24 @@ class scene3 extends Phaser.Scene {
         }
 
         function passageScene1() {
-            this.scene.start("scene1", { sceneQuitee: "scene3" , spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health});
+            this.scene.start("scene1", { sceneQuitee: "scene4" , spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health});
             // , { positionX: this.positionX, positionY: this.positionY });
         }
         // { positionX: 1550, positionY: 350, first: false}
 
-        function passageScene2() {
-            this.scene.start("scene2", { sceneQuitee: "scene3" , spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health});
-            // , { positionX: this.positionX, positionY: this.positionY });
-        }
+        // function passageScene2() {
+        //     this.scene.start("scene2", { sceneQuitee: "scene3" });
+        //     // , { positionX: this.positionX, positionY: this.positionY });
+        // }
 
         function regenVie(player, regen) {
             regen.destroy();
             this.scene.scene.health += 1;
-            if (this.scene.scene.health > 3) {
+            if (this.scene.scene.health > 3){
                 this.scene.scene.health = 3;
             }
         }
-
+        
         function ennemyCollider(player, ennemy) {
             if (this.scene.scene.isAttacking) {
                 ennemy.destroy();
@@ -456,6 +454,19 @@ class scene3 extends Phaser.Scene {
             this.gameOver = true; //si les pvs sont à 0, game over
         }
 
+        if (this.spearCollected) {
+            this.inventaire.anims.play('inv_spear', true);
+        }
+        else if (this.jumpCollected) {
+            this.inventaire.anims.play('inv_jump', true);
+        }
+        else if (this.health == 1) {
+            this.inventaire.anims.play('inv_full', true);
+        }
+        else {
+            this.inventaire.anims.play('inv_empty', true);
+        }
+
         if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
             this.physics.world.removeCollider(this.collider2);
             this.varBridge();
@@ -551,7 +562,7 @@ class scene3 extends Phaser.Scene {
             this.keyJustDown = "down";
 
         }
-        else if (!this.isAttacking) { // sinon
+        else if (!this.isAttacking){ // sinon
             this.isMoving = false;
             this.player.setVelocityX(0); //vitesse nulle
             this.player.setVelocityY(0);
