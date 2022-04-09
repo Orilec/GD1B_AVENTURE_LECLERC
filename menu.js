@@ -5,13 +5,13 @@ class menu extends Phaser.Scene {
     }
 
     preload(){
-        this.load.image('sky', 'assets/sky.png')
-        this.load.image('play', 'assets/play.png')
+        this.load.image('menu', 'assets/menu.png')
+        this.load.image('play', 'assets/play_button.png')
     }
 
     create(){
-        this.add.image(300, 200, 'sky');
-        var playButton =  this.add.image(300, 200, 'play').setInteractive() ;
+        this.add.image(640, 360, 'menu');
+        var playButton =  this.add.image(640, 360, 'play').setInteractive() ;
 
         playButton.on('pointerdown', function(pointer){
             this.scene.scene.start("scene1");

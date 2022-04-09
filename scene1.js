@@ -6,8 +6,6 @@ class scene1 extends Phaser.Scene {
     init(data) { this.sceneQuitee = data.sceneQuitee, this.spearCollected = data.spearCollected, this.jumpCollected = data.jumpCollected, this.keyCollected = data.keyCollected, this.health = data.health  };
     preload() {
         this.load.image('map', 'assets/map_test_02.png');
-        this.load.image('button_unactivated', 'assets/bouton1_rouge.png');
-        this.load.image('button_activated', 'assets/bouton1_vert.png');
         this.load.image('trou', 'assets/trou.png');
         this.load.image('area1', 'assets/plateform1.png');
         this.load.image('area2', 'assets/plateform2.png');
@@ -48,7 +46,6 @@ class scene1 extends Phaser.Scene {
                 this.scene.scene.gameover = true;
             }
             setTimeout(() => {
-                console.log("oui");
                 this.scene.scene.player.x = this.scene.scene.X_saved;
                 this.scene.scene.player.y =  this.scene.scene.Y_saved;
                 this.scene.scene.player.setAlpha(1);
@@ -483,7 +480,7 @@ class scene1 extends Phaser.Scene {
 
 
 
-        if (this.cursors2.space.isDown) {
+        if (this.cursors2.space.isDown && this.jumpCollected) {
             if (!this.isJumping && !this.isMoving) {
                 this.varTrou();
             }
@@ -504,10 +501,10 @@ class scene1 extends Phaser.Scene {
             this.gameOver = true; //si les pvs sont à 0, game over
         }
 
-        if (this.spearCollected) {
+        if (this.spearCollected && !this.jumpCollected) {
             this.inventaire.anims.play('inv_spear', true);
         }
-        else if (this.jumpCollected) {
+        else if (this.jumpCollected && !this.keyCollected) {
             this.inventaire.anims.play('inv_jump', true);
         }
         else if (this.keyCollected) {
@@ -516,6 +513,7 @@ class scene1 extends Phaser.Scene {
         else {
             this.inventaire.anims.play('inv_empty', true);
         }
+
 
         if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
             this.physics.world.removeCollider(this.collider2);
