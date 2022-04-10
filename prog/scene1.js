@@ -1,20 +1,24 @@
 class scene1 extends Phaser.Scene {
     constructor() {
         super("scene1");
+        //constructeur de la scene
 
     }
-    init(data) { this.sceneQuitee = data.sceneQuitee, this.spearCollected = data.spearCollected, this.jumpCollected = data.jumpCollected, this.keyCollected = data.keyCollected, this.health = data.health  };
+
+    //on récupère les variables passées d'une scene à l'autre
+    init(data) { this.sceneQuitee = data.sceneQuitee, this.spearCollected = data.spearCollected, this.jumpCollected = data.jumpCollected, this.keyCollected = data.keyCollected, this.health = data.health };
+
     preload() {
+
+        //load des assets utilisés
         this.load.image('map', 'assets/map_test_02.png');
-        this.load.image('trou', 'assets/trou.png');
-        this.load.image('area1', 'assets/plateform1.png');
-        this.load.image('area2', 'assets/plateform2.png');
-        this.load.image('bridge', 'assets/pont.png');
         this.load.image('fond', 'assets/fond.png');
         this.load.image('neurone_1', 'assets/neurone_1.png');
         this.load.image('neurone_2', 'assets/neurone_2.png');
         this.load.image('fog', 'assets/brouillard.png');
         this.load.image('regen', 'assets/serotonin.png');
+
+        //load des spritesheets
         this.load.spritesheet('perso', 'assets/sprite_sheet_heros.png',
             { frameWidth: 32, frameHeight: 64 });
         this.load.spritesheet('monstre', 'assets/creature_spritesheet.png',
@@ -26,6 +30,7 @@ class scene1 extends Phaser.Scene {
         this.load.spritesheet('inventaire', 'assets/inventaire_spritesheet.png',
             { frameWidth: 192, frameHeight: 64 });
 
+        //load de la map tiled
         this.load.image("tileset", "assets/tileset.png");
         this.load.tilemapTiledJSON("map", "map.json");
 
@@ -36,71 +41,49 @@ class scene1 extends Phaser.Scene {
 
     create() {
 
+        //limites du monde
         this.physics.world.setBounds(0, 0, 3200, 1280);
 
+        //fonction appelée quand on tombe dans un trou
         function fall() {
             this.scene.scene.isFalling = true;
-            this.scene.scene.player.setAlpha(0);
-            this.scene.scene.health -= 1;
-            if(this.scene.scene.health < 1){
-                this.scene.scene.gameover = true;
-            }
-            setTimeout(() => {
-                this.scene.scene.player.x = this.scene.scene.X_saved;
-                this.scene.scene.player.y =  this.scene.scene.Y_saved;
-                this.scene.scene.player.setAlpha(1);
+            this.scene.scene.player.setAlpha(0); //le joueur "disparaît"
+            this.scene.scene.health -= 1; //on perds un point de vie
+
+            setTimeout(() => { //au bout d'une seconde
+                this.scene.scene.player.x = this.scene.scene.X_saved; //le joueur est placé aux coordonées enregistrées
+                this.scene.scene.player.y = this.scene.scene.Y_saved;
+                this.scene.scene.player.setAlpha(1); //le joueur réapparait
                 this.scene.scene.isFalling = false;
             }, 1000);
         }
 
+        //création du background en différents layers
         this.add.tileSprite(1600, 640, 3200, 1280, 'fond');
-        this.add.tileSprite(1600, 640, 3200, 1280, 'neurone_1').setScrollFactor(0.80);
+        this.add.tileSprite(1600, 640, 3200, 1280, 'neurone_1').setScrollFactor(0.80); //les scroll factors différents donnent l'effet parallaxe
         this.add.tileSprite(1600, 640, 3200, 1280, 'neurone_2').setScrollFactor(0.90);
 
-        this.button1Activated = false;
-        this.button2Activated = false;
-        this.bridgeAppeared = false;
+        //déclaration des variables 
         this.keyJustDown = "down";
         this.isAttacking = false;
         this.isJumping = false;
         this.invulnerable = false;
-        this.monstre_alive = true;
-        this.monstreUp = true;
         this.isFalling = false;
 
-        
-        if (this.sceneQuitee!= "scene2" && this.sceneQuitee!= "scene3" && this.sceneQuitee!= "scene4"){
+        //si c'est le joueur n'a visité aucune autre scene avant, initialisation des variables
+        if (this.sceneQuitee != "scene2" && this.sceneQuitee != "scene3" && this.sceneQuitee != "scene4") {
             this.health = 3;
             this.spearCollected = false;
             this.jumpCollected = false;
             this.keyCollected = false;
         }
 
+        //création des différents layers de la map via tiled
         const map = this.add.tilemap("map");
 
         const tileset = map.addTilesetImage(
             "tileset", "tileset"
         );
-
-        // this.platforms = this.physics.add.staticGroup();
-        // this.platforms.create(96, 96, 'area1');
-        // this.platforms.create(328, 96, 'area2');
-
-        // const fond = map.createImageLayer(
-        //     "neurone",
-        //     tileset
-        // );
-
-
-        // const neurones_1 = map.createImageLayer(
-        //     "neurone_1",
-        //     tileset
-        // );
-
-        // const neurones_2 = map.createImageLayer(
-        //     "neurone_2",
-        //     tileset
-        // );
 
         const plateformes = map.createLayer(
             "Calque de Tuiles 1",
@@ -108,7 +91,7 @@ class scene1 extends Phaser.Scene {
         );
 
         plateformes.depth = 0;
-        plateformes.setCollisionByProperty({ estSolide: true });
+        plateformes.setCollisionByProperty({ estSolide: true }); //permet de déterminer quelles tiles entrent en collision avec le joueur
 
         const portail1 = map.createLayer(
             "portail1",
@@ -133,33 +116,19 @@ class scene1 extends Phaser.Scene {
             tileset
 
         )
-
-        this.regen = this.physics.add.group()
-
-        this.ennemies = this.physics.add.group();
-
-        map.getObjectLayer('monstres').objects.forEach((enemy) => {
-
-
-            const enemySprite = this.ennemies.create(enemy.x, enemy.y, 'monstre').setOrigin(0);
-            enemySprite.setPushable(false);
-
-
-        })
-
-        trou.setAlpha(1);
-
         trou.setCollisionByProperty({ trou: true });
 
-        this.trous = this.physics.add.staticGroup();
-        this.trou1 = this.trous.create(550, 150, 'trou')
+        //création du groupe pour les items de regen
+        this.regen = this.physics.add.group()
 
+        //création des ennemis en fonction de leur position sur le layer object de tiled
+        this.ennemies = this.physics.add.group();
+        map.getObjectLayer('monstres').objects.forEach((enemy) => {
+            const enemySprite = this.ennemies.create(enemy.x, enemy.y, 'monstre').setOrigin(0);
+            enemySprite.setPushable(false); //permet que les ennemis ne bougent pas lors d'une collision avec le joueur
+        })
 
-        this.buttons = this.physics.add.staticGroup();
-        this.button1 = this.buttons.create(200, 100, 'button_unactivated');
-        this.button2 = this.buttons.create(100, 150, 'button_unactivated');
-
-
+        //création du joueur à différentes coordonées selon la scene qu'il vient de quitter
         if (this.sceneQuitee == "scene3") {
             this.player = this.physics.add.sprite(1990, 20, 'perso');
         }
@@ -175,39 +144,37 @@ class scene1 extends Phaser.Scene {
 
         this.player.setCollideWorldBounds(true);
 
+        //on redimensionne la hitbox du joueur au niveau de ses pieds
         this.player.body.setSize(20, 16);
         this.player.body.setOffset(5, 45);
 
+
+        //création de la caméra, qui suit le joueur 
         this.cameras.main.setBounds(0, 0, 3200, 1280);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2)
 
-        // this.physics.add.overlap(this.player, this.platforms, checkBounds, null, this);
+        //création de tous les colliders
         this.physics.add.collider(this.player, plateformes);
-        this.physics.add.overlap(this.player, this.button1, activate1, null, this);
-        this.physics.add.overlap(this.player, this.button2, activate2, null, this);
         this.physics.add.collider(this.player, portail1, passageScene2, null, this);
         this.physics.add.collider(this.player, portail3, passageScene3, null, this);
         this.physics.add.collider(this.player, portail4, passageScene4, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
         this.physics.add.collider(this.player, this.regen, regenVie, null, this);
-
-
-
-
-
-        // this.monstre = this.physics.add.sprite(50, 150, 'monstre');
-        // this.monstre.setPushable(false);
-        // this.monstreRight = true;
-
         this.physics.add.collider(this.player, this.ennemies, ennemyCollider, null, this);
+
+        //ajout du brouillard
         this.add.tileSprite(1600, 640, 3200, 1280, 'fog').setScrollFactor(0.80);
+
+        //création de la jauge de santé mentale et de l'inventaire
         this.vie = this.add.sprite(370, 220, 'vie');
-        this.vie.setScrollFactor(0);
+        this.vie.setScrollFactor(0);//le scroll factor 0 fait qu'elle reste constamment à l'écran
 
         this.inventaire = this.add.sprite(850, 220, 'inventaire')
         this.inventaire.setScrollFactor(0);
 
+
+        //création de toute les animations
         this.anims.create({
             key: 'attack_right',
             frames: this.anims.generateFrameNumbers('attack', { start: 0, end: 5 }),
@@ -336,19 +303,11 @@ class scene1 extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
-        function activate1() {
-            this.scene.scene.button1.setTexture('button_activated')
-            this.scene.scene.button1Activated = true;
-        }
 
-        function activate2() {
-            this.scene.scene.button2.setTexture('button_activated')
-            this.scene.scene.button2Activated = true;
-        }
-
+        //fonctions de passage entre scenes
         function passageScene2() {
-            this.scene.start("scene2", { sceneQuitee: "scene1" , spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health});
-
+            this.scene.start("scene2", { sceneQuitee: "scene1", spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health });
+            //on "envoie" les variables pour les récupérer dans la scene suivante
         }
 
         function passageScene3() {
@@ -361,28 +320,32 @@ class scene1 extends Phaser.Scene {
 
         }
 
+
+        //fonction appelée quand on récupère un item de regen
         function regenVie(player, regen) {
             regen.destroy();
-            this.scene.scene.health += 1;
+            this.scene.scene.health += 1; //on récupère un point de vie
             if (this.scene.scene.health > 3) {
-                this.scene.scene.health = 3;
+                this.scene.scene.health = 3; //empêche le joueur d'avoir plus de 3 points de vie
             }
         }
 
+
+        //fonction appelée lors de la collision avec un ennemi
         function ennemyCollider(player, ennemy) {
-            if (this.scene.scene.isAttacking) {
-                ennemy.destroy();
-                var drop = Math.floor(Math.random() * 3);
+            if (this.scene.scene.isAttacking) { //si on est en train d'attaquer
+                ennemy.destroy(); //l'ennemi meurt
+                var drop = Math.floor(Math.random() * 3); //random pour savoir si l'ennemi drop de la regen
                 if (drop == 1) {
-                    this.scene.scene.regen.create(ennemy.x, ennemy.y, 'regen');
+                    this.scene.scene.regen.create(ennemy.x, ennemy.y, 'regen'); //création de la regen aux coordonées de l'ennemi
                 }
 
             }
-            else {
+            else { //sinon
                 if (!this.scene.scene.invulnerable) {
                     this.scene.scene.invulnerable = true;
-                    this.scene.scene.health -= 1;
-                    setTimeout(() => {
+                    this.scene.scene.health -= 1; //on prend un dégat
+                    setTimeout(() => { //1s d'invulnérabilité
                         this.scene.scene.invulnerable = false;
                     }, 1000);
                 }
@@ -391,22 +354,11 @@ class scene1 extends Phaser.Scene {
 
         }
 
-
-        this.varBridge = function bridgeActivation() {
-            console.log("oui")
-            this.bridgeAppeared = true;
-            const bridge = map.createLayer(
-                "pont",
-                tileset
-            );
-            this.player.depth = 2;
-            bridge.depth = 1;
-        }
-
+        //fonction de saut, mise dans une varibale pour pouvoir l'appeler dans le update
         this.varTrou = function saut() {
             this.scene.scene.isJumping = true;
-            this.physics.world.removeCollider(this.collider);
-            if (this.scene.scene.keyJustDown == "right") {
+            this.physics.world.removeCollider(this.collider); //on enlève temporairement le collider avec les trous
+            if (this.scene.scene.keyJustDown == "right") { //selon la dernière direction dans laquelle on est allé, on saute
                 this.scene.scene.player.anims.play('turn');
                 this.scene.scene.player.setAccelerationX(10000);
             }
@@ -415,15 +367,19 @@ class scene1 extends Phaser.Scene {
                 this.scene.scene.player.setAccelerationX(-10000);
             }
 
-            setTimeout(() => {
-                this.scene.scene.player.setAccelerationX(0);
-                this.scene.scene.collider = this.physics.add.collider(this.scene.scene.player, trou, fall, null, this);
+            setTimeout(() => { //aubout de 800ms
+                this.scene.scene.player.setAccelerationX(0); //le saut s'arrête
+                this.scene.scene.collider = this.physics.add.collider(this.scene.scene.player, trou, fall, null, this); //on recrée le collider avec les trous
                 this.scene.scene.isJumping = false;
             }, 800);
 
         }
+
+        //création des touches pour le contrôle clavier
         this.cursors = this.input.keyboard.createCursorKeys();
         this.cursors2 = this.input.keyboard.addKeys('space, A');
+
+        //création des timers utilisés dans le update
         this.timer = 0;
         this.timer2 = 0;
 
@@ -435,41 +391,42 @@ class scene1 extends Phaser.Scene {
 
     update(time, delta) {
 
-        if (this.gameOver) { return}
+        //si gameover, le jeu s'arrête
+        if (this.gameOver) { return }
 
         this.timer2 += delta;
-        if (this.timer2 > 2000){
-            this.X_saved = this.player.x;
+        if (this.timer2 > 2000) { //toutes les 2s
+            this.X_saved = this.player.x; //on enregistre les coordonées du joueur, pour le faire réaparaitre en cas de chute
             this.Y_saved = this.player.y;
             this.timer2 = 0;
         }
-        
 
+        //pattern de déplacement des ennemis
         this.ennemies.children.each(function (ennemy) {
 
             this.scene.scene.timer += delta;
 
-            if (this.scene.scene.timer > 0 && this.scene.scene.timer < 1000) {
+            if (this.scene.scene.timer > 0 && this.scene.scene.timer < 1500) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(100);
+                ennemy.setVelocityX(180);
                 ennemy.anims.play('m_right', true);
             }
 
             else if (this.scene.scene.timer > 3000 && this.scene.scene.timer < 4500) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(-100);
+                ennemy.setVelocityX(-180);
                 ennemy.anims.play('m_left', true);
             }
             else if (this.scene.scene.timer > 1500 && this.scene.scene.timer < 3000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(-100);
+                ennemy.setVelocityY(-180);
                 ennemy.anims.play('m_up', true);
             }
             else if (this.scene.scene.timer > 4500) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(100);
+                ennemy.setVelocityY(180);
                 ennemy.anims.play('m_down', true);
-                if (this.scene.scene.timer > 6000){
+                if (this.scene.scene.timer > 6000) {
                     this.scene.scene.timer = 0;
                 }
             }
@@ -477,16 +434,14 @@ class scene1 extends Phaser.Scene {
         }, this);
 
 
-
-
-
+        //si on appuie sur espace et qu'on a l'item permettant le saut
         if (this.cursors2.space.isDown && this.jumpCollected) {
-            if (!this.isJumping && !this.isMoving) {
-                this.varTrou();
+            if (!this.isJumping && !this.isMoving) { //et si on est ni déjà en train de sauter ou en train de bouger
+                this.varTrou();// on appelle la fonction de saut
             }
         }
 
-
+        //actualisation de la jauge de vie en fonction des pv que l'on a
         if (this.health == 3) {
             this.vie.anims.play('pv3', true);
         }
@@ -501,6 +456,8 @@ class scene1 extends Phaser.Scene {
             this.gameOver = true; //si les pvs sont à 0, game over
         }
 
+
+        //actualisation de l'inventaire en fonction des objets récupérés
         if (this.spearCollected && !this.jumpCollected) {
             this.inventaire.anims.play('inv_spear', true);
         }
@@ -514,27 +471,22 @@ class scene1 extends Phaser.Scene {
             this.inventaire.anims.play('inv_empty', true);
         }
 
-
-        if (this.button1Activated && this.button2Activated && !this.bridgeAppeared) {
-            this.physics.world.removeCollider(this.collider2);
-            this.varBridge();
-        }
-
+        //fonctions d'attaque
+        //si l'on appuie sur A et que l'on a obtenu la lance, on attaque dans la direction utilisée la dernière fois
         if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "down") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
-                this.player.body.setSize(20, 40);
+                this.player.body.setSize(20, 40); //on change la hitbox du perso pour s'adapter à l'attaque
                 this.player.body.setOffset(15, 30);
                 this.player.anims.play('attack_down');
                 setTimeout(() => {
-                    this.player.body.setSize(20, 16);
+                    this.player.body.setSize(20, 16); //puis on remet la hitbox normal quand l'attaque est finie
                     this.player.body.setOffset(5, 45);
                     this.isAttacking = false;
                 }, 500);
             }
 
         }
-
         if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "up") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
@@ -548,7 +500,6 @@ class scene1 extends Phaser.Scene {
                 }, 500);
             }
         }
-
         if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "right") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
@@ -562,7 +513,6 @@ class scene1 extends Phaser.Scene {
                 }, 500);
             }
         }
-
         if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "left") {
             if (!this.isAttacking) {
                 this.isAttacking = true;
@@ -578,54 +528,45 @@ class scene1 extends Phaser.Scene {
         }
 
 
+        //mouvements du joueur
+        if (!this.isFalling) {
+            if (this.cursors.left.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(0);
+                this.player.setVelocityX(-240);
+                this.player.anims.play('left', true);
+                this.keyJustDown = "left";
+            }
+            else if (this.cursors.right.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(0);
+                this.player.setVelocityX(240);
+                this.player.anims.play('right', true);
+                this.keyJustDown = "right";
+            }
+            else if (this.cursors.up.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(-240);
+                this.player.setVelocityX(0);
+                this.player.anims.play('up', true);
+                this.keyJustDown = "up";
 
-if (!this.isFalling){
-    if (this.cursors.left.isDown) {
-        this.isMoving = true;
-        this.player.setVelocityY(0);
-        this.player.setVelocityX(-240);
-        this.player.anims.play('left', true);
-        this.keyJustDown = "left";
-    }
-    else if (this.cursors.right.isDown) {
-        this.isMoving = true;
-        this.player.setVelocityY(0);
-        this.player.setVelocityX(240);
-        this.player.anims.play('right', true);
-        this.keyJustDown = "right";
-    }
-    else if (this.cursors.up.isDown) {
-        this.isMoving = true;
-        this.player.setVelocityY(-240);
-        this.player.setVelocityX(0);
-        this.player.anims.play('up', true);
-        this.keyJustDown = "up";
+            }
+            else if (this.cursors.down.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(240);
+                this.player.setVelocityX(0);
+                this.player.anims.play('down', true);
+                this.keyJustDown = "down";
 
-    }
-    else if (this.cursors.down.isDown) {
-        this.isMoving = true;
-        this.player.setVelocityY(240);
-        this.player.setVelocityX(0);
-        this.player.anims.play('down', true);
-        this.keyJustDown = "down";
-
-    }
-    else if (!this.isAttacking) { // sinon
-        this.isMoving = false;
-        this.player.setVelocityX(0); //vitesse nulle
-        this.player.setVelocityY(0);
-        this.player.anims.play('turn'); //animation fait face caméra
-    }
-}
-
-
-
-
-        // if (this.player.x >= 770){
-        //     this.positionX = 30;
-        //     this.positionY = this.player.y;
-        //     this.scene.start("scene2", { positionX: this.positionX, positionY: this.positionY });
-        // }
+            }
+            else if (!this.isAttacking) { // sinon
+                this.isMoving = false;
+                this.player.setVelocityX(0); //vitesse nulle
+                this.player.setVelocityY(0);
+                this.player.anims.play('turn'); //animation fait face caméra
+            }
+        }
 
 
     }

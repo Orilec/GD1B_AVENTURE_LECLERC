@@ -3,15 +3,11 @@ class scene3 extends Phaser.Scene {
         super("scene3");
 
     }
-    init(data) { this.sceneQuitee = data.sceneQuitee, this.spearCollected = data.spearCollected, this.jumpCollected = data.jumpCollected, this.keyCollected = data.keyCollected, this.health = data.health  };
+    init(data) { this.sceneQuitee = data.sceneQuitee, this.spearCollected = data.spearCollected, this.jumpCollected = data.jumpCollected, this.keyCollected = data.keyCollected, this.health = data.health };
     preload() {
-        this.load.image('map', 'assets/map_test_02.png');
+
         this.load.image('button_unactivated', 'assets/neuron_unactivated.png');
         this.load.image('button_activated', 'assets/neuron_activated.png');
-        this.load.image('trou', 'assets/trou.png');
-        this.load.image('area1', 'assets/plateform1.png');
-        this.load.image('area2', 'assets/plateform2.png');
-        this.load.image('bridge', 'assets/pont.png');
         this.load.image('fond', 'assets/fond.png');
         this.load.image('neurone_1', 'assets/neurone_1.png');
         this.load.image('neurone_2', 'assets/neurone_2.png');
@@ -53,7 +49,6 @@ class scene3 extends Phaser.Scene {
         this.isAttacking = false;
         this.isJumping = false;
         this.invulnerable = false;
-        this.monstre_alive = true;
         this.isFalling = false;
 
         const map3 = this.add.tilemap("map3");
@@ -62,38 +57,12 @@ class scene3 extends Phaser.Scene {
             "tileset", "tileset"
         );
 
-        // this.platforms = this.physics.add.staticGroup();
-        // this.platforms.create(96, 96, 'area1');
-        // this.platforms.create(328, 96, 'area2');
-
-        // const fond = map.createImageLayer(
-        //     "neurone",
-        //     tileset
-        // );
-
-
-        // const neurones_1 = map.createImageLayer(
-        //     "neurone_1",
-        //     tileset
-        // );
-
-        // const neurones_2 = map.createImageLayer(
-        //     "neurone_2",
-        //     tileset
-        // );
-
         const plateformes = map3.createLayer(
             "plateformes",
             tileset
         );
 
         plateformes.setCollisionByProperty({ estSolide: true });
-
-        // const portail1 = map3.createLayer(
-        //     "portail1",
-        //     tileset
-        // );
-        // portail1.setCollisionByProperty({ portail1: true });
 
         const portail2 = map3.createLayer(
             "portail2",
@@ -176,8 +145,6 @@ class scene3 extends Phaser.Scene {
 
 
         })
-        // this.trous = this.physics.add.staticGroup();
-        // this.trou1 = this.trous.create(550, 150, 'trou')
 
 
         if (this.sceneQuitee == "scene2") {
@@ -197,13 +164,12 @@ class scene3 extends Phaser.Scene {
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(2)
 
-        // this.physics.add.overlap(this.player, this.platforms, checkBounds, null, this);
+
         this.physics.add.collider(this.player, plateformes);
         this.physics.add.collider(this.player, sillons);
         this.physics.add.collider(this.player, this.plaque_1, activate1, null, this);
         this.physics.add.collider(this.player, this.plaque_2, activate2, null, this);
         this.physics.add.collider(this.player, this.plaque_3, activate3, null, this);
-        // this.collider = this.physics.add.collider(this.player, portail1, passageScene1, null, this);
         this.physics.add.collider(this.player, portail2, passageScene2, null, this);
         this.physics.add.collider(this.player, portail3, passageScene1, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
@@ -212,19 +178,11 @@ class scene3 extends Phaser.Scene {
         this.physics.add.collider(this.player, this.regen, regenVie, null, this);
         this.physics.add.collider(this.player, this.saut, itemSaut, null, this);
 
-
-
-
-
-        this.monstre = this.physics.add.sprite(50, 150, 'monstre');
-        this.monstre.setPushable(false);
-        this.monstreRight = true;
-
         this.physics.add.collider(this.player, this.monstre, ennemyCollider, null, this);
 
         this.vie = this.add.sprite(370, 220, 'vie');
         this.vie.setScrollFactor(0);
-        this.inventaire = this.add.sprite(850,220, 'inventaire')
+        this.inventaire = this.add.sprite(850, 220, 'inventaire')
         this.inventaire.setScrollFactor(0);
 
         this.anims.create({
@@ -370,13 +328,13 @@ class scene3 extends Phaser.Scene {
         }
 
         function passageScene1() {
-            this.scene.start("scene1", { sceneQuitee: "scene3" , spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health});
+            this.scene.start("scene1", { sceneQuitee: "scene3", spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health });
             // , { positionX: this.positionX, positionY: this.positionY });
         }
         // { positionX: 1550, positionY: 350, first: false}
 
         function passageScene2() {
-            this.scene.start("scene2", { sceneQuitee: "scene3" , spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health});
+            this.scene.start("scene2", { sceneQuitee: "scene3", spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health });
             // , { positionX: this.positionX, positionY: this.positionY });
         }
 
@@ -422,7 +380,7 @@ class scene3 extends Phaser.Scene {
             this.scene.scene.health -= 1;
             setTimeout(() => {
                 this.scene.scene.player.x = this.scene.scene.X_saved;
-                this.scene.scene.player.y =  this.scene.scene.Y_saved;
+                this.scene.scene.player.y = this.scene.scene.Y_saved;
                 this.scene.scene.player.setAlpha(1);
                 this.scene.scene.isFalling = false;
             }, 1000);
@@ -461,7 +419,7 @@ class scene3 extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.cursors2 = this.input.keyboard.addKeys('space, A');
-        this.timer =0;
+        this.timer = 0;
         this.timer2 = 0;
     }
 
@@ -473,7 +431,7 @@ class scene3 extends Phaser.Scene {
         if (this.gameOver) { return; }
 
         this.timer2 += delta;
-        if (this.timer2 > 2000){
+        if (this.timer2 > 2000) {
             this.X_saved = this.player.x;
             this.Y_saved = this.player.y;
             this.timer2 = 0;
@@ -482,27 +440,28 @@ class scene3 extends Phaser.Scene {
 
             this.scene.scene.timer += delta;
 
-            if (this.scene.scene.timer > 0 && this.scene.scene.timer < 1000) {
+
+            if (this.scene.scene.timer > 0 && this.scene.scene.timer < 3000) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(100);
+                ennemy.setVelocityX(180);
                 ennemy.anims.play('m_right', true);
             }
 
-            else if (this.scene.scene.timer > 3000 && this.scene.scene.timer < 4500) {
+            else if (this.scene.scene.timer > 6000 && this.scene.scene.timer < 9000) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(-100);
+                ennemy.setVelocityX(-180);
                 ennemy.anims.play('m_left', true);
             }
-            else if (this.scene.scene.timer > 1500 && this.scene.scene.timer < 3000) {
+            else if (this.scene.scene.timer > 3000 && this.scene.scene.timer < 6000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(-100);
+                ennemy.setVelocityY(-180);
                 ennemy.anims.play('m_up', true);
             }
-            else if (this.scene.scene.timer > 4500) {
+            else if (this.scene.scene.timer > 9000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(100);
+                ennemy.setVelocityY(180);
                 ennemy.anims.play('m_down', true);
-                if (this.scene.scene.timer > 6000){
+                if (this.scene.scene.timer > 12000) {
                     this.scene.scene.timer = 0;
                 }
             }
@@ -606,75 +565,44 @@ class scene3 extends Phaser.Scene {
 
 
 
-        if (!this.isFalling){
-        if (this.cursors.left.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(0);
-            this.player.setVelocityX(-240);
-            this.player.anims.play('left', true);
-            this.keyJustDown = "left";
-        }
-        else if (this.cursors.right.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(0);
-            this.player.setVelocityX(240);
-            this.player.anims.play('right', true);
-            this.keyJustDown = "right";
-        }
-        else if (this.cursors.up.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(-240);
-            this.player.setVelocityX(0);
-            this.player.anims.play('up', true);
-            this.keyJustDown = "up";
-
-        }
-        else if (this.cursors.down.isDown) {
-            this.isMoving = true;
-            this.player.setVelocityY(240);
-            this.player.setVelocityX(0);
-            this.player.anims.play('down', true);
-            this.keyJustDown = "down";
-
-        }
-        else if (!this.isAttacking) { // sinon
-            this.isMoving = false;
-            this.player.setVelocityX(0); //vitesse nulle
-            this.player.setVelocityY(0);
-            this.player.anims.play('turn'); //animation fait face caméra
-        }
-    }
-
-        if (this.monstre_alive) {
-            if (this.monstre.x < 30) {
-                this.monstreRight = true;
-                this.monstreLeft = false;
+        if (!this.isFalling) {
+            if (this.cursors.left.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(0);
+                this.player.setVelocityX(-240);
+                this.player.anims.play('left', true);
+                this.keyJustDown = "left";
+            }
+            else if (this.cursors.right.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(0);
+                this.player.setVelocityX(240);
+                this.player.anims.play('right', true);
+                this.keyJustDown = "right";
+            }
+            else if (this.cursors.up.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(-240);
+                this.player.setVelocityX(0);
+                this.player.anims.play('up', true);
+                this.keyJustDown = "up";
 
             }
-            if (this.monstre.x > 100) {
-                this.monstreLeft = true;
-                this.monstreRight = false;
+            else if (this.cursors.down.isDown) {
+                this.isMoving = true;
+                this.player.setVelocityY(240);
+                this.player.setVelocityX(0);
+                this.player.anims.play('down', true);
+                this.keyJustDown = "down";
 
             }
-
-            if (this.monstreRight) {
-                this.monstre.setVelocityX(100);
-                this.monstre.anims.play('m_right', true);
-            }
-            if (this.monstreLeft) {
-                this.monstre.setVelocityX(-100);
-                this.monstre.anims.play('m_left', true);
+            else if (!this.isAttacking) { // sinon
+                this.isMoving = false;
+                this.player.setVelocityX(0); //vitesse nulle
+                this.player.setVelocityY(0);
+                this.player.anims.play('turn'); //animation fait face caméra
             }
         }
-
-
-
-        // if (this.player.x >= 770){
-        //     this.positionX = 30;
-        //     this.positionY = this.player.y;
-        //     this.scene.start("scene2", { positionX: this.positionX, positionY: this.positionY });
-        // }
-
 
     }
 
