@@ -41,10 +41,12 @@ class scene3 extends Phaser.Scene {
         this.add.tileSprite(1120, 800, 2240, 1600, 'neurone_1').setScrollFactor(0.80);
         this.add.tileSprite(1120, 800, 2240, 1600, 'neurone_2').setScrollFactor(0.90);
 
+        //nouvelles variables servant à l'énigme d'activation du pont
         this.button1Activated = false;
         this.button2Activated = false;
         this.button3Activated = false;
         this.bridgeAppeared = false;
+
         this.keyJustDown = "down";
         this.isAttacking = false;
         this.isJumping = false;
@@ -108,6 +110,8 @@ class scene3 extends Phaser.Scene {
 
 
         })
+
+        //création des neurones à connecter
         this.plaque_1 = this.physics.add.group();
         map3.getObjectLayer('plaque_1').objects.forEach((plaque) => {
 
@@ -135,6 +139,7 @@ class scene3 extends Phaser.Scene {
 
         })
 
+        //création de l'item de saut
         this.saut = this.physics.add.group();
         map3.getObjectLayer('saut').objects.forEach((saut) => {
 
@@ -167,13 +172,19 @@ class scene3 extends Phaser.Scene {
 
         this.physics.add.collider(this.player, plateformes);
         this.physics.add.collider(this.player, sillons);
+
+        //nouveaux collider pour les neurones
         this.physics.add.collider(this.player, this.plaque_1, activate1, null, this);
         this.physics.add.collider(this.player, this.plaque_2, activate2, null, this);
         this.physics.add.collider(this.player, this.plaque_3, activate3, null, this);
+
         this.physics.add.collider(this.player, portail2, passageScene2, null, this);
         this.physics.add.collider(this.player, portail3, passageScene1, null, this);
         this.collider = this.physics.add.collider(this.player, trou, fall, null, this);
+
+        //nouveau collider de trou qui se trouve sous le pont, pour pouvoir le désactiver quand le pont apparaît
         this.collider2 = this.physics.add.collider(this.player, trou2, fall, null, this);
+
         this.physics.add.collider(this.player, this.ennemies, ennemyCollider, null, this);
         this.physics.add.collider(this.player, this.regen, regenVie, null, this);
         this.physics.add.collider(this.player, this.saut, itemSaut, null, this);
@@ -312,20 +323,21 @@ class scene3 extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
-        function activate1(player, button) {
-            button.setTexture('button_activated')
-            this.scene.scene.button1Activated = true;
-        }
 
+        //fonctions appelées quand on active les neurones
+        function activate1(player, button) {
+            button.setTexture('button_activated') //changement d'asset
+            this.scene.scene.button1Activated = true; //mise à jour de la variable
+        }
         function activate2(player, button) {
             button.setTexture('button_activated')
             this.scene.scene.button2Activated = true;
         }
-
         function activate3(player, button) {
             button.setTexture('button_activated')
             this.scene.scene.button3Activated = true;
         }
+
 
         function passageScene1() {
             this.scene.start("scene1", { sceneQuitee: "scene3", spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health });
@@ -346,6 +358,7 @@ class scene3 extends Phaser.Scene {
             }
         }
 
+        //même principe que la fonction de récupération de l'item d'attaque
         function itemSaut(player, item) {
             item.destroy();
             this.scene.scene.jumpCollected = true;
@@ -386,13 +399,14 @@ class scene3 extends Phaser.Scene {
             }, 1000);
         }
 
+        //fonction servant à faire apparaître le pont
         this.varBridge = function bridgeActivation() {
             this.scene.scene.bridgeAppeared = true;
-            const bridge = map3.createLayer(
+            const bridge = map3.createLayer( //création du layer pont via tiled
                 "pont",
                 tileset
             );
-            this.player.depth = 2;
+            this.player.depth = 2; //permet que le joueur reste au dessus du pont
             bridge.depth = 1;
         }
 
@@ -502,10 +516,13 @@ class scene3 extends Phaser.Scene {
             this.inventaire.anims.play('inv_empty', true);
         }
 
+        //si tous les neurones sont connectés
         if (this.button1Activated && this.button2Activated && this.button3Activated && !this.bridgeAppeared) {
-            this.physics.world.removeCollider(this.collider2);
-            this.varBridge();
+            this.physics.world.removeCollider(this.collider2); //on désactive le collider du trou qui se trouve sous le pont
+            this.varBridge(); // et on crée le pont
         }
+
+        
         if (this.spearCollected && this.cursors2.A.isDown && this.keyJustDown == "down") {
             if (!this.isAttacking) {
                 this.isAttacking = true;

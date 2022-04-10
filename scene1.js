@@ -139,7 +139,7 @@ class scene1 extends Phaser.Scene {
             this.player = this.physics.add.sprite(2850, 480, 'perso');
         }
         else {
-            this.player = this.physics.add.sprite(2000, 1000, 'perso');
+            this.player = this.physics.add.sprite(2400, 800, 'perso');
         }
 
         this.player.setCollideWorldBounds(true);

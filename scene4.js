@@ -49,6 +49,7 @@ class scene4 extends Phaser.Scene {
                 this.scene.scene.isFalling = false;
             }, 1000);
         }
+
         this.add.tileSprite(1120, 800, 2240, 1600, 'fond');
         this.add.tileSprite(1120, 800, 2240, 1600, 'neurone_1').setScrollFactor(0.80);
         this.add.tileSprite(1120, 800, 2240, 1600, 'neurone_2').setScrollFactor(0.90);
@@ -58,6 +59,7 @@ class scene4 extends Phaser.Scene {
         this.isJumping = false;
         this.isFalling = false;
         this.invulnerable = false;
+        this.end = false;
 
 
         const map4 = this.add.tilemap("map4");
@@ -73,6 +75,7 @@ class scene4 extends Phaser.Scene {
 
         plateformes.setCollisionByProperty({ estSolide: true });
 
+        //création de la barrière
         const barriere = map4.createLayer(
             "barriere",
             tileset
@@ -94,6 +97,7 @@ class scene4 extends Phaser.Scene {
 
         trou.setCollisionByProperty({ trou: true });
 
+        //création de la porte
         const porte = map4.createLayer(
             "porte",
             tileset
@@ -101,6 +105,15 @@ class scene4 extends Phaser.Scene {
         )
 
         porte.setCollisionByProperty({ porte: true });
+
+        //création du téléporteur de fin
+        const fin = map4.createLayer(
+            "fin",
+            tileset
+
+        )
+
+        fin.setCollisionByProperty({ fin: true });
 
         this.regen = this.physics.add.group();
 
@@ -115,6 +128,7 @@ class scene4 extends Phaser.Scene {
 
         });
 
+        //création de l'item clé
         this.key = this.physics.add.group()
         map4.getObjectLayer('key').objects.forEach((key) => {
 
@@ -140,9 +154,10 @@ class scene4 extends Phaser.Scene {
         this.physics.add.collider(this.player, this.ennemies, ennemyCollider, null, this);
         this.physics.add.collider(this.player, this.regen, regenVie, null, this);
         this.physics.add.collider(this.player, this.key, itemClef, null, this);
+        this.physics.add.collider(this.player, fin, finNiveau, null, this);
         this.colliderPorte = this.physics.add.collider(this.player, porte, passagePorte, null, this);
 
-
+        //ajout de la vision rétrécie
         this.add.tileSprite(640, 360, 700, 1100, 'vision').setScrollFactor(0);
 
 
@@ -295,15 +310,21 @@ class scene4 extends Phaser.Scene {
             }
         }
 
+        //même principe que la récupération des items précédents
         function itemClef(player, clef) {
             clef.destroy();
             this.scene.scene.keyCollected = true;
         }
 
         function passagePorte(player) {
-            if (this.scene.scene.keyCollected) {
-                this.physics.world.removeCollider(this.scene.scene.colliderPorte);
+            if (this.scene.scene.keyCollected) { //si on a la clé
+                this.physics.world.removeCollider(this.scene.scene.colliderPorte); //le collider avec la porte est détruit et on peut passer
             }
+        }
+
+
+        function finNiveau(player) {
+            this.scene.stop(); //arrêt de la scene: fin du niveau
         }
 
 
@@ -378,23 +399,23 @@ class scene4 extends Phaser.Scene {
 
             if (this.scene.scene.timer > 0 && this.scene.scene.timer < 3000) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(210);
+                ennemy.setVelocityX(190);
                 ennemy.anims.play('m_right', true);
             }
 
             else if (this.scene.scene.timer > 6000 && this.scene.scene.timer < 9000) {
                 ennemy.setVelocityY(0)
-                ennemy.setVelocityX(-210);
+                ennemy.setVelocityX(-190);
                 ennemy.anims.play('m_left', true);
             }
             else if (this.scene.scene.timer > 3000 && this.scene.scene.timer < 6000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(-210);
+                ennemy.setVelocityY(-190);
                 ennemy.anims.play('m_up', true);
             }
             else if (this.scene.scene.timer > 9000) {
                 ennemy.setVelocityX(0);
-                ennemy.setVelocityY(210);
+                ennemy.setVelocityY(190);
                 ennemy.anims.play('m_down', true);
                 if (this.scene.scene.timer > 12000) {
                     this.scene.scene.timer = 0;

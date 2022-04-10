@@ -91,6 +91,7 @@ class scene2 extends Phaser.Scene {
 
         this.ennemies = this.physics.add.group();
 
+        //création de l'item "lance"
         this.attaque = this.physics.add.group()
         map2.getObjectLayer('attaque').objects.forEach((attaque) => {
 
@@ -108,9 +109,6 @@ class scene2 extends Phaser.Scene {
 
         })
 
-        this.buttons = this.physics.add.staticGroup();
-        this.button1 = this.buttons.create(200, 100, 'button_unactivated');
-        this.button2 = this.buttons.create(100, 150, 'button_unactivated');
 
 
         if (this.sceneQuitee == "scene1") {
@@ -141,7 +139,7 @@ class scene2 extends Phaser.Scene {
         this.vie = this.add.sprite(370, 220, 'vie');
         this.vie.setScrollFactor(0);
 
-        this.inventaire = this.add.sprite(850, 220, 'inventaire')
+        this.inventaire = this.add.sprite(850, 220, 'inventaire');
         this.inventaire.setScrollFactor(0);
 
         this.anims.create({
@@ -275,13 +273,13 @@ class scene2 extends Phaser.Scene {
 
         function passageScene1() {
             this.scene.start("scene1", { sceneQuitee: "scene2", spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health });
-            // , { positionX: this.positionX, positionY: this.positionY });
+
         }
 
 
         function passageScene3() {
             this.scene.start("scene3", { sceneQuitee: "scene2", spearCollected: this.spearCollected, jumpCollected: this.jumpCollected, keyCollected: this.keyCollected, health: this.health });
-            // , { positionX: this.positionX, positionY: this.positionY });
+
         }
 
         function regenVie(player, regen) {
@@ -292,10 +290,10 @@ class scene2 extends Phaser.Scene {
             }
         }
 
-
+        //fonction appelée quand on récupère l'item d'attaque
         function itemAttaque(player, item) {
-            item.destroy();
-            this.scene.scene.spearCollected = true;
+            item.destroy(); //l'item est détruit
+            this.scene.scene.spearCollected = true; //la variable qui indique que l'on possède l'item passe à true
         }
 
         function ennemyCollider(player, ennemy) {
@@ -486,7 +484,7 @@ class scene2 extends Phaser.Scene {
 
 
 
-
+        //les contrôles sont inversés
         if (!this.isFalling) {
             if (this.cursors.left.isDown) {
                 this.isMoving = true;
